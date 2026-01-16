@@ -689,16 +689,6 @@ def main():
             <div class="hero-subtext">비상교육 IT/Data 분야 전문가분들의 기술 스택을 체계적으로 파악하여<br>조직 내 기술 역량에 대한 이해도를 제고하고자, 관련 설문을 시작하겠습니다.</div>
         </div>
     </div>
-    <div class="marquee" style="background: rgba(255,255,255,0.1); padding: 1rem 0; margin-top: -2rem; position: relative; z-index: 5;">
-        <div class="marquee-content" style="display: inline-flex; gap: 3rem;">
-            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">✨ 비상교육 ✨</span>
-            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">🚀 기술 스택 설문 🚀</span>
-            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">💡 함께 성장해요 💡</span>
-            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">✨ 비상교육 ✨</span>
-            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">🚀 기술 스택 설문 🚀</span>
-            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">💡 함께 성장해요 💡</span>
-        </div>
-    </div>
     """, unsafe_allow_html=True)
     
     # 설문 컨테이너 시작
