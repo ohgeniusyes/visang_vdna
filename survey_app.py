@@ -685,8 +685,8 @@ def main():
     st.markdown("""
     <div class="hero-section">
         <div class="hero-content">
-            <div class="hero-text">안녕하세요 CP님!</div>
-            <div class="hero-subtext">비상교육 IT/Data 전문가 분들의 기술 스택을 파악하여<br>더 나은 협업과 성장의 기회를 만들어가고자 합니다.</div>
+            <div class="hero-text">안녕하세요, CP님. 설문에 응해주셔서 감사합니다.</div>
+            <div class="hero-subtext">비상교육 IT/Data 분야 전문가분들의 기술 스택을 체계적으로 파악하여<br>조직 내 기술 역량에 대한 이해도를 제고하고자, 관련 설문을 시작하겠습니다.</div>
         </div>
     </div>
     <div class="marquee" style="background: rgba(255,255,255,0.1); padding: 1rem 0; margin-top: -2rem; position: relative; z-index: 5;">
@@ -921,55 +921,22 @@ def main():
                     cols = st.columns(4)
                     levels = ["입문", "초급", "중급", "고급"]
                     level_icons = ["🔰", "📚", "⚙️", "🏆"]
+                    level_colors = [
+                        "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                        "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                        "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+                        "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
+                    ]
                     
                     selected_level = st.session_state[level_key]
                     
-                    for idx, (level, icon) in enumerate(zip(levels, level_icons)):
+                    for idx, (level, icon, color) in enumerate(zip(levels, level_icons, level_colors)):
                         with cols[idx]:
                             is_selected = selected_level == level
-                            button_class = "selected" if is_selected else ""
-                            button_style = f"""
-                                <style>
-                                .level-btn-{level_key}-{level} {{
-                                    width: 100%;
-                                    padding: 0.875rem 0.5rem;
-                                    border: 2px solid #e0e0e0;
-                                    border-radius: 12px;
-                                    background: white;
-                                    color: #666;
-                                    font-weight: 600;
-                                    font-size: 0.9rem;
-                                    cursor: pointer;
-                                    transition: all 0.3s ease;
-                                    text-align: center;
-                                }}
-                                .level-btn-{level_key}-{level}:hover {{
-                                    transform: translateY(-2px);
-                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                                }}
-                                .level-btn-{level_key}-{level}.selected {{
-                                    color: white;
-                                    border-color: transparent;
-                                    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-                                }}
-                                .level-btn-{level_key}-{level}.입문.selected {{
-                                    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                                }}
-                                .level-btn-{level_key}-{level}.초급.selected {{
-                                    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-                                }}
-                                .level-btn-{level_key}-{level}.중급.selected {{
-                                    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-                                }}
-                                .level-btn-{level_key}-{level}.고급.selected {{
-                                    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-                                }}
-                                </style>
-                            """
-                            st.markdown(button_style, unsafe_allow_html=True)
+                            button_label = f"{icon} {level}"
                             
                             if st.button(
-                                f"{icon} {level}",
+                                button_label,
                                 key=f"{level_key}_{level}",
                                 use_container_width=True,
                                 type="primary" if is_selected else "secondary"
@@ -979,12 +946,24 @@ def main():
                                 else:
                                     st.session_state[level_key] = level
                                 st.rerun()
+                            
+                            # 선택된 버튼 스타일 적용
+                            if is_selected:
+                                st.markdown(f"""
+                                <style>
+                                div[data-testid="stButton"] > button[kind="primary"][data-testid="baseButton-secondary"] {{
+                                    background: {color} !important;
+                                    border: none !important;
+                                    color: white !important;
+                                    font-weight: 700 !important;
+                                    box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+                                }}
+                                </style>
+                                """, unsafe_allow_html=True)
                     
-                    # 선택 안함 버튼
+                    # 선택된 레벨 표시
                     if selected_level != "선택 안함":
-                        if st.button("❌ 선택 취소", key=f"{level_key}_clear", use_container_width=True):
-                            st.session_state[level_key] = "선택 안함"
-                            st.rerun()
+                        st.markdown(f"<div style='margin-top: 0.5rem; color: #667eea; font-weight: 600;'>✓ 선택됨: {selected_level}</div>", unsafe_allow_html=True)
                     
                     current_level = st.session_state[level_key]
                     if current_level != "선택 안함":
