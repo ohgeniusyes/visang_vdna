@@ -674,15 +674,17 @@ def main():
     """, unsafe_allow_html=True)
     
     # 비상 브랜드 헤더
-    # visang 로고 이미지 사용
-    st.markdown("""
+    # visang 로고 이미지 사용 (로컬 파일)
+    import os
+    if os.path.exists("visang_logo.png"):
+        logo_html = '<img src="visang_logo.png" alt="visang" style="height: 2.5rem; width: auto;">'
+    else:
+        logo_html = '<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>'
+    
+    st.markdown(f"""
     <div class="visang-header">
         <div style="display: flex; align-items: center;">
-            <img src="https://career.visang.com/static/images/logo.svg" 
-                 alt="visang" 
-                 style="height: 2.5rem; width: auto;"
-                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <div class="visang-logo" style="display: none; font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>
+            {logo_html}
         </div>
         <div style="color: #1a1a1a; font-size: 1rem; font-weight: 500;">IT개발자/데이터 전문가 기술 스택 설문</div>
     </div>
