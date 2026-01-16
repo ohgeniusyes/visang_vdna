@@ -866,7 +866,13 @@ def main():
                 border: 2px solid rgba(102, 126, 234, 0.2);
                 box-shadow: 0 8px 24px rgba(102, 126, 234, 0.1);">
         <h4 style="color: #667eea; margin: 0 0 2rem 0; font-size: 1.4rem; font-weight: 700;">📊 기술 숙련도 기준</h4>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="background: #e0e0e0; padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+                <strong style="color: #666; font-size: 1.2rem; display: block; margin-bottom: 0.75rem;">➖ 해당없음</strong>
+                <p style="margin: 0; color: #666; line-height: 1.7; font-size: 0.95rem;">
+                    해당 기술을 사용하지 않거나 다루지 않는 경우 (기본값)
+                </p>
+            </div>
             <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 16px rgba(245, 87, 108, 0.3);">
                 <strong style="color: white; font-size: 1.2rem; display: block; margin-bottom: 0.75rem;">🔰 입문</strong>
                 <p style="margin: 0; color: rgba(255,255,255,0.95); line-height: 1.7; font-size: 0.95rem;">
@@ -879,6 +885,8 @@ def main():
                     기본 기능을 활용하여 간단한 프로젝트를 독립적으로 개발할 수 있는 수준
                 </p>
             </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
             <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 16px rgba(67, 233, 123, 0.3);">
                 <strong style="color: white; font-size: 1.2rem; display: block; margin-bottom: 0.75rem;">⚙️ 중급</strong>
                 <p style="margin: 0; color: rgba(255,255,255,0.95); line-height: 1.7; font-size: 0.95rem;">
@@ -935,20 +943,49 @@ def main():
                     # 세션 상태에서 현재 선택된 레벨 가져오기
                     level_key = f"{selected_role}_{category}_{tech}_level"
                     if level_key not in st.session_state:
-                        st.session_state[level_key] = "선택 안함"
+                        st.session_state[level_key] = "해당없음"  # 기본값
                     
-                    # 4개 버튼을 옆으로 나열
-                    cols = st.columns(4)
-                    levels = ["입문", "초급", "중급", "고급"]
-                    level_icons = ["🔰", "📚", "⚙️", "🏆"]
+                    # 5개 버튼을 옆으로 나열
+                    cols = st.columns(5)
+                    levels = ["해당없음", "입문", "초급", "중급", "고급"]
+                    level_icons = ["➖", "🔰", "📚", "⚙️", "🏆"]
                     level_colors = [
-                        "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                        "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                        "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-                        "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
+                        "#e0e0e0",  # 해당없음 - 회색
+                        "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",  # 입문 - 핑크
+                        "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",  # 초급 - 블루
+                        "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",  # 중급 - 그린
+                        "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"   # 고급 - 핑크-옐로우
                     ]
                     
                     selected_level = st.session_state[level_key]
+                    
+                    # 각 버튼에 대한 CSS 생성
+                    css_styles = ""
+                    for idx, (level, color) in enumerate(zip(levels, level_colors)):
+                        button_key = f"{level_key}_{level}"
+                        if selected_level == level:
+                            if level == "해당없음":
+                                css_styles += f"""
+                                button[data-testid="baseButton-primary"][aria-label*="{button_key}"] {{
+                                    background: {color} !important;
+                                    border: 2px solid #999 !important;
+                                    color: #666 !important;
+                                    font-weight: 700 !important;
+                                }}
+                                """
+                            else:
+                                css_styles += f"""
+                                button[data-testid="baseButton-primary"][aria-label*="{button_key}"] {{
+                                    background: {color} !important;
+                                    border: none !important;
+                                    color: white !important;
+                                    font-weight: 700 !important;
+                                    box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+                                }}
+                                """
+                    
+                    if css_styles:
+                        st.markdown(f"<style>{css_styles}</style>", unsafe_allow_html=True)
                     
                     for idx, (level, icon, color) in enumerate(zip(levels, level_icons, level_colors)):
                         with cols[idx]:
@@ -961,32 +998,11 @@ def main():
                                 use_container_width=True,
                                 type="primary" if is_selected else "secondary"
                             ):
-                                if st.session_state[level_key] == level:
-                                    st.session_state[level_key] = "선택 안함"
-                                else:
-                                    st.session_state[level_key] = level
+                                st.session_state[level_key] = level
                                 st.rerun()
-                            
-                            # 선택된 버튼 스타일 적용
-                            if is_selected:
-                                st.markdown(f"""
-                                <style>
-                                div[data-testid="stButton"] > button[kind="primary"][data-testid="baseButton-secondary"] {{
-                                    background: {color} !important;
-                                    border: none !important;
-                                    color: white !important;
-                                    font-weight: 700 !important;
-                                    box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
-                                }}
-                                </style>
-                                """, unsafe_allow_html=True)
-                    
-                    # 선택된 레벨 표시
-                    if selected_level != "선택 안함":
-                        st.markdown(f"<div style='margin-top: 0.5rem; color: #667eea; font-weight: 600;'>✓ 선택됨: {selected_level}</div>", unsafe_allow_html=True)
                     
                     current_level = st.session_state[level_key]
-                    if current_level != "선택 안함":
+                    if current_level != "해당없음":
                         category_data[tech] = current_level
                     
                     st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
