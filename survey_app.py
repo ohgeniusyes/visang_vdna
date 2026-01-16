@@ -322,10 +322,35 @@ def main():
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* 전체 배경 - 비상 브랜드 파란색 */
+    /* 전체 배경 - 그라데이션 애니메이션 */
     .stApp {
-        background: #2661E8;
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
         background-attachment: fixed;
+    }
+    
+    @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* 흐르는 텍스트 애니메이션 */
+    @keyframes slide {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+    
+    .marquee {
+        display: flex;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    
+    .marquee-content {
+        display: inline-flex;
+        animation: slide 20s linear infinite;
     }
     
     /* 메인 컨테이너 - 전체 너비, 패딩 제거 */
@@ -360,9 +385,9 @@ def main():
     
     /* 히어로 섹션 */
     .hero-section {
-        background: linear-gradient(135deg, #2661E8 0%, #1e4fc7 100%);
+        background: transparent;
         padding: 8rem 4rem 6rem 4rem;
-        min-height: 60vh;
+        min-height: 50vh;
         display: flex;
         align-items: center;
         position: relative;
@@ -376,32 +401,93 @@ def main():
     
     .hero-text {
         color: white;
-        font-size: 3.8rem;
-        font-weight: 700;
-        line-height: 1.3;
+        font-size: 4rem;
+        font-weight: 800;
+        line-height: 1.2;
         margin-bottom: 2.5rem;
-        letter-spacing: -1.5px;
+        letter-spacing: -2px;
+        text-shadow: 2px 4px 8px rgba(0,0,0,0.3);
     }
     
     .hero-subtext {
-        color: rgba(255, 255, 255, 0.95);
-        font-size: 1.8rem;
-        font-weight: 400;
+        color: rgba(255, 255, 255, 0.98);
+        font-size: 1.9rem;
+        font-weight: 500;
         line-height: 1.8;
         margin-bottom: 3rem;
         letter-spacing: -0.3px;
+        text-shadow: 1px 2px 4px rgba(0,0,0,0.2);
     }
     
     /* 설문 컨테이너 - 흰색 카드 */
     .survey-container {
-        background: white;
-        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border-radius: 32px;
         padding: 4rem 5rem;
-        margin: -6rem auto 4rem auto;
-        max-width: 1100px;
-        box-shadow: 0 24px 64px rgba(0,0,0,0.12);
+        margin: -5rem auto 4rem auto;
+        max-width: 1200px;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.2);
         position: relative;
         z-index: 10;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    /* 기술 수준 버튼 스타일 */
+    .level-buttons {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+    
+    .level-btn {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        background: white;
+        color: #666;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    
+    .level-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .level-btn.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    }
+    
+    .level-btn.입문.selected {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-color: #f5576c;
+        box-shadow: 0 4px 16px rgba(245, 87, 108, 0.4);
+    }
+    
+    .level-btn.초급.selected {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border-color: #4facfe;
+        box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
+    }
+    
+    .level-btn.중급.selected {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        border-color: #43e97b;
+        box-shadow: 0 4px 16px rgba(67, 233, 123, 0.4);
+    }
+    
+    .level-btn.고급.selected {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        border-color: #fa709a;
+        box-shadow: 0 4px 16px rgba(250, 112, 154, 0.4);
     }
     
     /* 제목 스타일 */
@@ -603,6 +689,16 @@ def main():
             <div class="hero-subtext">비상교육 IT/Data 전문가 분들의 기술 스택을 파악하여<br>더 나은 협업과 성장의 기회를 만들어가고자 합니다.</div>
         </div>
     </div>
+    <div class="marquee" style="background: rgba(255,255,255,0.1); padding: 1rem 0; margin-top: -2rem; position: relative; z-index: 5;">
+        <div class="marquee-content" style="display: inline-flex; gap: 3rem;">
+            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">✨ 비상교육 ✨</span>
+            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">🚀 기술 스택 설문 🚀</span>
+            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">💡 함께 성장해요 💡</span>
+            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">✨ 비상교육 ✨</span>
+            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">🚀 기술 스택 설문 🚀</span>
+            <span style="color: white; font-size: 1.2rem; font-weight: 600; padding: 0 2rem;">💡 함께 성장해요 💡</span>
+        </div>
+    </div>
     """, unsafe_allow_html=True)
     
     # 설문 컨테이너 시작
@@ -679,12 +775,13 @@ def main():
     
     # 안내 메시지
     st.markdown("""
-    <div style="background: #f0f4ff; 
+    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); 
                 padding: 2rem; 
-                border-radius: 12px; 
-                border-left: 4px solid #2661E8;
-                margin-bottom: 3rem;">
-        <h4 style="color: #2661E8; margin: 0 0 1rem 0; font-size: 1.3rem; font-weight: 600;">💡 안내</h4>
+                border-radius: 16px; 
+                border: 2px solid rgba(102, 126, 234, 0.3);
+                margin-bottom: 3rem;
+                box-shadow: 0 4px 16px rgba(102, 126, 234, 0.1);">
+        <h4 style="color: #667eea; margin: 0 0 1rem 0; font-size: 1.3rem; font-weight: 700;">💡 안내</h4>
         <p style="margin: 0; color: #1a1a1a; line-height: 1.8; font-size: 1.05rem;">
             본 설문은 비상교육 IT 개발자들의 기술력을 파악하기 위한 것입니다.<br>
             성실하게 응답해주시면 감사하겠습니다.
@@ -742,40 +839,41 @@ def main():
     # 기술 수준 기준 설명
     st.markdown("### 2️⃣ 기술 스택 및 숙련도 선택")
     st.markdown("""
-    <div style="background: #f0f4ff; 
-                padding: 2rem; 
-                border-radius: 12px; 
+    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%); 
+                padding: 2.5rem; 
+                border-radius: 20px; 
                 margin-bottom: 3rem;
-                border-left: 4px solid #2661E8;">
-        <h4 style="color: #2661E8; margin: 0 0 1.5rem 0; font-size: 1.3rem; font-weight: 600;">📊 기술 숙련도 기준</h4>
+                border: 2px solid rgba(102, 126, 234, 0.2);
+                box-shadow: 0 8px 24px rgba(102, 126, 234, 0.1);">
+        <h4 style="color: #667eea; margin: 0 0 2rem 0; font-size: 1.4rem; font-weight: 700;">📊 기술 숙련도 기준</h4>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
-            <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 2px solid #e0e0e0;">
-                <strong style="color: #2661E8; font-size: 1.1rem;">🔰 입문</strong>
-                <p style="margin: 0.5rem 0 0 0; color: #1a1a1a; line-height: 1.6;">
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 16px rgba(245, 87, 108, 0.3);">
+                <strong style="color: white; font-size: 1.2rem; display: block; margin-bottom: 0.75rem;">🔰 입문</strong>
+                <p style="margin: 0; color: rgba(255,255,255,0.95); line-height: 1.7; font-size: 0.95rem;">
                     기본 문법과 개념을 이해하고, 간단한 예제나 튜토리얼을 따라할 수 있는 수준
                 </p>
             </div>
-            <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 2px solid #e0e0e0;">
-                <strong style="color: #2661E8; font-size: 1.1rem;">📚 초급</strong>
-                <p style="margin: 0.5rem 0 0 0; color: #1a1a1a; line-height: 1.6;">
+            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 16px rgba(79, 172, 254, 0.3);">
+                <strong style="color: white; font-size: 1.2rem; display: block; margin-bottom: 0.75rem;">📚 초급</strong>
+                <p style="margin: 0; color: rgba(255,255,255,0.95); line-height: 1.7; font-size: 0.95rem;">
                     기본 기능을 활용하여 간단한 프로젝트를 독립적으로 개발할 수 있는 수준
                 </p>
             </div>
-            <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 2px solid #e0e0e0;">
-                <strong style="color: #2661E8; font-size: 1.1rem;">⚙️ 중급</strong>
-                <p style="margin: 0.5rem 0 0 0; color: #1a1a1a; line-height: 1.6;">
+            <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 16px rgba(67, 233, 123, 0.3);">
+                <strong style="color: white; font-size: 1.2rem; display: block; margin-bottom: 0.75rem;">⚙️ 중급</strong>
+                <p style="margin: 0; color: rgba(255,255,255,0.95); line-height: 1.7; font-size: 0.95rem;">
                     복잡한 기능 구현이 가능하고, 문제 해결을 위해 공식 문서나 커뮤니티 자료를 참고하여 해결할 수 있는 수준
                 </p>
             </div>
-            <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 2px solid #e0e0e0;">
-                <strong style="color: #2661E8; font-size: 1.1rem;">🏆 고급</strong>
-                <p style="margin: 0.5rem 0 0 0; color: #1a1a1a; line-height: 1.6;">
+            <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 16px rgba(250, 112, 154, 0.3);">
+                <strong style="color: white; font-size: 1.2rem; display: block; margin-bottom: 0.75rem;">🏆 고급</strong>
+                <p style="margin: 0; color: rgba(255,255,255,0.95); line-height: 1.7; font-size: 0.95rem;">
                     심화 기능과 최적화를 다룰 수 있고, 다른 팀원들에게 멘토링이나 기술 공유가 가능한 수준
                 </p>
             </div>
         </div>
-        <p style="margin: 1.5rem 0 0 0; color: #666; font-size: 0.95rem;">
-            💡 각 기술에 대해 본인의 숙련도 수준을 선택해주세요. (해당 기술을 다루지 않으시면 선택하지 않으셔도 됩니다)
+        <p style="margin: 2rem 0 0 0; color: #667eea; font-size: 1rem; font-weight: 600; text-align: center;">
+            💡 각 기술에 대해 본인의 숙련도 수준을 클릭하여 선택해주세요
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -809,21 +907,90 @@ def main():
             for category, options in tech_data.items():
                 st.markdown(f"#### 📌 {category}")
                 
-                # 각 기술에 대해 4단계 선택
+                # 각 기술에 대해 4단계 선택 (버튼 형태)
                 category_data = {}
                 for tech in options:
-                    col1, col2 = st.columns([3, 1])
-                    with col1:
-                        st.markdown(f"<div style='padding: 0.5rem 0;'><strong>{tech}</strong></div>", unsafe_allow_html=True)
-                    with col2:
-                        level = st.selectbox(
-                            f"{tech} 숙련도",
-                            options=["선택 안함", "입문", "초급", "중급", "고급"],
-                            key=f"{selected_role}_{category}_{tech}",
-                            label_visibility="collapsed"
-                        )
-                        if level != "선택 안함":
-                            category_data[tech] = level
+                    st.markdown(f"<div style='margin-bottom: 1rem;'><strong style='font-size: 1.1rem; color: #1a1a1a;'>{tech}</strong></div>", unsafe_allow_html=True)
+                    
+                    # 세션 상태에서 현재 선택된 레벨 가져오기
+                    level_key = f"{selected_role}_{category}_{tech}_level"
+                    if level_key not in st.session_state:
+                        st.session_state[level_key] = "선택 안함"
+                    
+                    # 4개 버튼을 옆으로 나열
+                    cols = st.columns(4)
+                    levels = ["입문", "초급", "중급", "고급"]
+                    level_icons = ["🔰", "📚", "⚙️", "🏆"]
+                    
+                    selected_level = st.session_state[level_key]
+                    
+                    for idx, (level, icon) in enumerate(zip(levels, level_icons)):
+                        with cols[idx]:
+                            is_selected = selected_level == level
+                            button_class = "selected" if is_selected else ""
+                            button_style = f"""
+                                <style>
+                                .level-btn-{level_key}-{level} {{
+                                    width: 100%;
+                                    padding: 0.875rem 0.5rem;
+                                    border: 2px solid #e0e0e0;
+                                    border-radius: 12px;
+                                    background: white;
+                                    color: #666;
+                                    font-weight: 600;
+                                    font-size: 0.9rem;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    text-align: center;
+                                }}
+                                .level-btn-{level_key}-{level}:hover {{
+                                    transform: translateY(-2px);
+                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                }}
+                                .level-btn-{level_key}-{level}.selected {{
+                                    color: white;
+                                    border-color: transparent;
+                                    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+                                }}
+                                .level-btn-{level_key}-{level}.입문.selected {{
+                                    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                                }}
+                                .level-btn-{level_key}-{level}.초급.selected {{
+                                    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                                }}
+                                .level-btn-{level_key}-{level}.중급.selected {{
+                                    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+                                }}
+                                .level-btn-{level_key}-{level}.고급.selected {{
+                                    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+                                }}
+                                </style>
+                            """
+                            st.markdown(button_style, unsafe_allow_html=True)
+                            
+                            if st.button(
+                                f"{icon} {level}",
+                                key=f"{level_key}_{level}",
+                                use_container_width=True,
+                                type="primary" if is_selected else "secondary"
+                            ):
+                                if st.session_state[level_key] == level:
+                                    st.session_state[level_key] = "선택 안함"
+                                else:
+                                    st.session_state[level_key] = level
+                                st.rerun()
+                    
+                    # 선택 안함 버튼
+                    if selected_level != "선택 안함":
+                        if st.button("❌ 선택 취소", key=f"{level_key}_clear", use_container_width=True):
+                            st.session_state[level_key] = "선택 안함"
+                            st.rerun()
+                    
+                    current_level = st.session_state[level_key]
+                    if current_level != "선택 안함":
+                        category_data[tech] = current_level
+                    
+                    st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
                 
                 if category_data:
                     form_data[category] = category_data
