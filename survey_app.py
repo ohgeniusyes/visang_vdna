@@ -374,6 +374,23 @@ def main():
         top: 0;
         z-index: 100;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .visang-header-left {
+        display: flex;
+        align-items: center;
+        flex: 0 0 auto;
+    }
+    
+    .visang-header-right {
+        display: flex;
+        align-items: center;
+        flex: 0 0 auto;
+        color: #1a1a1a;
+        font-size: 1rem;
+        font-weight: 500;
     }
     
     .visang-logo {
@@ -674,23 +691,25 @@ def main():
     """, unsafe_allow_html=True)
     
     # 비상 브랜드 헤더
-    st.markdown("""
+    import os
+    if os.path.exists("visang_logo.png"):
+        with open("visang_logo.png", "rb") as f:
+            logo_data = f.read()
+            logo_base64 = base64.b64encode(logo_data).decode()
+            logo_html = f'<img src="data:image/png;base64,{logo_base64}" alt="visang" style="height: 2.5rem; width: auto; display: block;">'
+    else:
+        logo_html = '<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>'
+    
+    st.markdown(f"""
     <div class="visang-header">
+        <div class="visang-header-left">
+            {logo_html}
+        </div>
+        <div class="visang-header-right">
+            IT개발자/데이터 전문가 기술 스택 설문
+        </div>
+    </div>
     """, unsafe_allow_html=True)
-    
-    # 헤더 내용을 columns로 배치
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        import os
-        if os.path.exists("visang_logo.png"):
-            st.image("visang_logo.png", width=250)
-        else:
-            st.markdown('<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>', unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown('<div style="text-align: right; color: #1a1a1a; font-size: 1rem; font-weight: 500; padding-top: 0.5rem;">IT개발자/데이터 전문가 기술 스택 설문</div>', unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
     
     # 히어로 섹션
     st.markdown("""
