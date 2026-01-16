@@ -674,12 +674,18 @@ def main():
     """, unsafe_allow_html=True)
     
     # 비상 브랜드 헤더
-    # visang 로고 이미지 사용 (로컬 파일)
+    # visang 로고 이미지 사용 (base64 인코딩)
     import os
+    logo_html = '<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>'
+    
     if os.path.exists("visang_logo.png"):
-        logo_html = '<img src="visang_logo.png" alt="visang" style="height: 2.5rem; width: auto;">'
-    else:
-        logo_html = '<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>'
+        try:
+            with open("visang_logo.png", "rb") as f:
+                logo_data = f.read()
+                logo_base64 = base64.b64encode(logo_data).decode()
+                logo_html = f'<img src="data:image/png;base64,{logo_base64}" alt="visang" style="height: 2.5rem; width: auto;">'
+        except Exception as e:
+            pass  # 오류 시 텍스트 로고 사용
     
     st.markdown(f"""
     <div class="visang-header">
