@@ -8,9 +8,10 @@ import base64
 
 # 페이지 설정
 st.set_page_config(
-    page_title="IT 개발자 기술 스택 설문",
+    page_title="IT 개발자 기술 스택 설문 | 비상교육",
     page_icon="📋",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 # Google Sheets 인증 설정
@@ -294,129 +295,283 @@ def save_to_sheets(sheet, data):
         return False
 
 def main():
-    # 커스텀 CSS 스타일 적용
+    # 비상교육 웹사이트 스타일 CSS 적용
     st.markdown("""
     <style>
-    /* 전체 배경 그라데이션 */
+    /* Streamlit 기본 요소 숨기기 */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* 전체 배경 - 비상 브랜드 파란색 */
     .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #2661E8;
         background-attachment: fixed;
     }
     
-    /* 메인 컨테이너 스타일 */
+    /* 메인 컨테이너 - 전체 너비, 패딩 제거 */
     .main .block-container {
+        padding-top: 0;
+        padding-left: 0;
+        padding-right: 0;
+        padding-bottom: 0;
+        max-width: 100%;
+    }
+    
+    /* 헤더 스타일 - 흰색 배경 */
+    .visang-header {
+        background: white;
+        padding: 1.5rem 4rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e0e0e0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .visang-logo {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2661E8;
+        letter-spacing: -0.5px;
+    }
+    
+    /* 히어로 섹션 */
+    .hero-section {
+        background: #2661E8;
+        padding: 6rem 4rem;
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    
+    .hero-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    
+    .hero-text {
+        color: white;
+        font-size: 3.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 2rem;
+        letter-spacing: -1px;
+    }
+    
+    .hero-subtext {
+        color: white;
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 3rem;
+        letter-spacing: -0.5px;
+    }
+    
+    /* 설문 컨테이너 - 흰색 카드 */
+    .survey-container {
         background: white;
         border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        margin-top: 2rem;
-        margin-bottom: 2rem;
+        padding: 3rem 4rem;
+        margin: -5rem auto 4rem auto;
+        max-width: 1000px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        position: relative;
+        z-index: 10;
     }
     
     /* 제목 스타일 */
     h1 {
-        color: #667eea;
-        text-align: center;
+        color: #2661E8;
         font-size: 2.5rem;
+        font-weight: 700;
         margin-bottom: 1rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        letter-spacing: -0.5px;
     }
     
-    /* 서브헤더 스타일 */
     h3 {
-        color: #764ba2;
-        border-left: 5px solid #667eea;
-        padding-left: 1rem;
+        color: #1a1a1a;
+        font-size: 1.6rem;
+        font-weight: 600;
+        margin-top: 2.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid #2661E8;
+    }
+    
+    h4 {
+        color: #1a1a1a;
+        font-size: 1.3rem;
+        font-weight: 600;
         margin-top: 2rem;
         margin-bottom: 1rem;
     }
     
-    /* 정보 박스 스타일 */
-    .stInfo {
-        background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-        border-left: 5px solid #667eea;
-        border-radius: 10px;
-        padding: 1rem;
-    }
-    
-    /* 경고 박스 스타일 */
-    .stWarning {
-        background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
-        border-left: 5px solid #f39c12;
-        border-radius: 10px;
-        padding: 1rem;
-    }
-    
-    /* 성공 박스 스타일 */
-    .stSuccess {
-        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-        border-left: 5px solid #00b894;
-        border-radius: 10px;
-        padding: 1rem;
-    }
-    
     /* 입력 필드 스타일 */
     .stTextInput > div > div > input {
-        border-radius: 10px;
-        border: 2px solid #667eea;
+        border-radius: 12px;
+        border: 2px solid #e0e0e0;
+        padding: 1rem;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border-color: #2661E8;
+        box-shadow: 0 0 0 4px rgba(38, 97, 232, 0.1);
+        outline: none;
     }
     
     .stSelectbox > div > div > select {
-        border-radius: 10px;
-        border: 2px solid #667eea;
-    }
-    
-    /* 버튼 스타일 */
-    .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 0.75rem 2rem;
-        font-weight: bold;
+        border-radius: 12px;
+        border: 2px solid #e0e0e0;
+        padding: 1rem;
         font-size: 1.1rem;
         transition: all 0.3s;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .stSelectbox > div > div > select:focus {
+        border-color: #2661E8;
+        box-shadow: 0 0 0 4px rgba(38, 97, 232, 0.1);
+        outline: none;
+    }
+    
+    /* 버튼 스타일 - 흰색 둥근 버튼 (비상 스타일) */
+    .stButton > button {
+        background: white;
+        color: #2661E8;
+        border: 2px solid white;
+        border-radius: 50px;
+        padding: 1rem 2.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     
     .stButton > button:hover {
+        background: #f8f9fa;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    
+    /* 제출 버튼 - 파란색 */
+    .submit-button > button {
+        background: #2661E8;
+        color: white;
+        border: 2px solid #2661E8;
+        border-radius: 50px;
+        padding: 1.2rem 3rem;
+        font-weight: 600;
+        font-size: 1.2rem;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(38, 97, 232, 0.3);
+    }
+    
+    .submit-button > button:hover {
+        background: #1e4fc7;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(38, 97, 232, 0.4);
     }
     
     /* 멀티셀렉트 스타일 */
     .stMultiSelect > div > div {
-        border-radius: 10px;
-        border: 2px solid #667eea;
+        border-radius: 12px;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s;
     }
     
-    /* 구분선 스타일 */
+    .stMultiSelect > div > div:focus-within {
+        border-color: #2661E8;
+        box-shadow: 0 0 0 4px rgba(38, 97, 232, 0.1);
+    }
+    
+    /* 정보 박스 */
+    .stInfo {
+        background: #f0f4ff;
+        border-left: 4px solid #2661E8;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: #1a1a1a;
+    }
+    
+    .stWarning {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: #856404;
+    }
+    
+    .stSuccess {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        border-radius: 12px;
+        padding: 2rem;
+        color: #155724;
+        text-align: center;
+    }
+    
+    /* 구분선 */
     hr {
         border: none;
         height: 2px;
-        background: linear-gradient(90deg, transparent, #667eea, transparent);
-        margin: 2rem 0;
+        background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+        margin: 3rem 0;
+    }
+    
+    /* 라벨 */
+    label {
+        color: #1a1a1a;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* 스크롤바 */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #2661E8;
+        border-radius: 5px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #1e4fc7;
     }
     </style>
     """, unsafe_allow_html=True)
     
-    st.title("📋 IT 개발자 기술 스택 설문")
-    st.markdown("---")
-    
-    # 안내 메시지
+    # 비상 브랜드 헤더
     st.markdown("""
-    <div style="background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); 
-                padding: 1.5rem; 
-                border-radius: 15px; 
-                border-left: 5px solid #667eea;
-                margin-bottom: 2rem;">
-        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">💡 안내</h4>
-        <p style="margin: 0; color: #2d3436;">
-            본 설문은 비상교육 IT 개발자들의 기술력을 파악하기 위한 것입니다.<br>
-            성실하게 응답해주시면 감사하겠습니다.
-        </p>
+    <div class="visang-header">
+        <div class="visang-logo">visang</div>
+        <div style="color: #1a1a1a; font-size: 1rem;">IT 개발자 기술 스택 설문</div>
     </div>
     """, unsafe_allow_html=True)
+    
+    # 히어로 섹션
+    st.markdown("""
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-text">안녕하세요 CP님!</div>
+            <div class="hero-subtext">어떤 기술 스택을 보유하고 계신가요?</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 설문 컨테이너 시작
+    st.markdown('<div class="survey-container">', unsafe_allow_html=True)
     
     # 세션 상태 초기화
     if 'submitted' not in st.session_state:
@@ -424,19 +579,22 @@ def main():
     
     if st.session_state.submitted:
         st.markdown("""
-        <div style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); 
-                    padding: 2rem; 
-                    border-radius: 15px; 
-                    border-left: 5px solid #00b894;
+        <div style="background: #d4edda; 
+                    padding: 4rem 3rem; 
+                    border-radius: 20px; 
+                    border-left: 4px solid #28a745;
                     text-align: center;
                     margin: 2rem 0;">
-            <h2 style="color: #00b894; margin: 0 0 1rem 0;">✅ 설문이 성공적으로 제출되었습니다!</h2>
-            <p style="color: #2d3436; font-size: 1.1rem; margin: 0;">감사합니다. 🙏</p>
+            <h2 style="color: #155724; margin: 0 0 1.5rem 0; font-size: 2.2rem; font-weight: 700;">✅ 설문이 성공적으로 제출되었습니다!</h2>
+            <p style="color: #155724; font-size: 1.3rem; margin: 0 0 2rem 0;">감사합니다. 🙏</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("🔄 새 설문 작성하기", type="primary", use_container_width=True):
-            st.session_state.submitted = False
-            st.rerun()
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🔄 새 설문 작성하기", type="primary", use_container_width=True):
+                st.session_state.submitted = False
+                st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)  # 설문 컨테이너 닫기
         return
     
     # Google Sheets 초기화 (연결 실패해도 설문은 진행 가능)
@@ -473,15 +631,31 @@ def main():
     # Google Sheets 연결 실패 시 경고만 표시 (설문은 계속 진행)
     if sheets_error:
         st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); 
-                    padding: 1rem; 
-                    border-radius: 10px; 
-                    border-left: 5px solid #f39c12;
-                    margin-bottom: 1rem;">
-            <strong>⚠️ Google Sheets 연결 오류:</strong> {sheets_error}<br>
-            <small>💡 참고: 설문은 진행할 수 있지만, 응답이 저장되지 않을 수 있습니다.</small>
+        <div style="background: #fff3cd; 
+                    padding: 1.5rem; 
+                    border-radius: 12px; 
+                    border-left: 4px solid #ffc107;
+                    margin-bottom: 2rem;">
+            <strong style="color: #856404; font-size: 1.1rem;">⚠️ Google Sheets 연결 오류:</strong> 
+            <span style="color: #856404;">{sheets_error}</span><br>
+            <small style="color: #856404;">💡 참고: 설문은 진행할 수 있지만, 응답이 저장되지 않을 수 있습니다.</small>
         </div>
         """, unsafe_allow_html=True)
+    
+    # 안내 메시지
+    st.markdown("""
+    <div style="background: #f0f4ff; 
+                padding: 2rem; 
+                border-radius: 12px; 
+                border-left: 4px solid #2661E8;
+                margin-bottom: 3rem;">
+        <h4 style="color: #2661E8; margin: 0 0 1rem 0; font-size: 1.3rem; font-weight: 600;">💡 안내</h4>
+        <p style="margin: 0; color: #1a1a1a; line-height: 1.8; font-size: 1.05rem;">
+            본 설문은 비상교육 IT 개발자들의 기술력을 파악하기 위한 것입니다.<br>
+            성실하게 응답해주시면 감사하겠습니다.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -496,7 +670,7 @@ def main():
     
     if not name or name.strip() == "":
         st.info("👆 위에 이름을 입력해주세요.")
-        st.stop()  # stop()을 사용하여 아래 코드는 실행하지 않지만 UI는 유지
+        st.stop()
     
     st.markdown("---")
     
@@ -511,7 +685,7 @@ def main():
     
     if not selected_role:
         st.info("👆 위에서 직군을 선택해주세요.")
-        st.stop()  # stop()을 사용하여 아래 코드는 실행하지 않지만 UI는 유지
+        st.stop()
     
     st.markdown("---")
     
@@ -519,11 +693,12 @@ def main():
     st.markdown(f"### 2️⃣ 기술 스택 선택 ({selected_role})")
     st.markdown("""
     <div style="background: #f8f9fa; 
-                padding: 1rem; 
-                border-radius: 10px; 
-                margin-bottom: 1.5rem;
-                border-left: 4px solid #667eea;">
-        <strong>💡 안내:</strong> 각 카테고리에서 본인이 다룰 수 있는 기술을 모두 선택해주세요. (복수 선택 가능)
+                padding: 1.25rem; 
+                border-radius: 8px; 
+                margin-bottom: 2rem;
+                border-left: 4px solid #2661E8;">
+        <strong style="color: #2661E8;">💡 안내:</strong> 
+        <span style="color: #1a1a1a;">각 카테고리에서 본인이 다룰 수 있는 기술을 모두 선택해주세요. (복수 선택 가능)</span>
     </div>
     """, unsafe_allow_html=True)
     
@@ -542,18 +717,18 @@ def main():
         )
         form_data[category] = selected
         if idx < len(tech_data):
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
     
     st.markdown("---")
     
     # 제출 버튼
-    st.markdown("""
-    <div style="text-align: center; margin: 2rem 0;">
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 3rem; margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        submit_button = st.button("📤 설문 제출하기", type="primary", use_container_width=True)
+        submit_button = st.button("📤 설문 제출하기", type="primary", use_container_width=True, key="submit_btn")
+    
+    # 설문 컨테이너 닫기
+    st.markdown('</div>', unsafe_allow_html=True)
     
     if submit_button:
         # 데이터 검증
@@ -572,6 +747,14 @@ def main():
             else:
                 st.error("❌ Google Sheets 연결이 되어 있지 않아 응답을 저장할 수 없습니다.")
                 st.info("💡 **해결 방법**: Streamlit Cloud Secrets 설정을 확인해주세요.")
+    
+    # 푸터
+    st.markdown("""
+    <div style="background: white; padding: 3rem 4rem; margin-top: 4rem; text-align: center; border-top: 1px solid #e0e0e0;">
+        <div style="color: #2661E8; font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">visang</div>
+        <div style="color: #666; font-size: 0.9rem;">© 2024 Visang Education. All rights reserved.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
