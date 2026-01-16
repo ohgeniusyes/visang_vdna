@@ -294,34 +294,149 @@ def save_to_sheets(sheet, data):
         return False
 
 def main():
+    # 커스텀 CSS 스타일 적용
+    st.markdown("""
+    <style>
+    /* 전체 배경 그라데이션 */
+    .stApp {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-attachment: fixed;
+    }
+    
+    /* 메인 컨테이너 스타일 */
+    .main .block-container {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* 제목 스타일 */
+    h1 {
+        color: #667eea;
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* 서브헤더 스타일 */
+    h3 {
+        color: #764ba2;
+        border-left: 5px solid #667eea;
+        padding-left: 1rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* 정보 박스 스타일 */
+    .stInfo {
+        background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+        border-left: 5px solid #667eea;
+        border-radius: 10px;
+        padding: 1rem;
+    }
+    
+    /* 경고 박스 스타일 */
+    .stWarning {
+        background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        border-left: 5px solid #f39c12;
+        border-radius: 10px;
+        padding: 1rem;
+    }
+    
+    /* 성공 박스 스타일 */
+    .stSuccess {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        border-left: 5px solid #00b894;
+        border-radius: 10px;
+        padding: 1rem;
+    }
+    
+    /* 입력 필드 스타일 */
+    .stTextInput > div > div > input {
+        border-radius: 10px;
+        border: 2px solid #667eea;
+    }
+    
+    .stSelectbox > div > div > select {
+        border-radius: 10px;
+        border: 2px solid #667eea;
+    }
+    
+    /* 버튼 스타일 */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 2rem;
+        font-weight: bold;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+    
+    /* 멀티셀렉트 스타일 */
+    .stMultiSelect > div > div {
+        border-radius: 10px;
+        border: 2px solid #667eea;
+    }
+    
+    /* 구분선 스타일 */
+    hr {
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #667eea, transparent);
+        margin: 2rem 0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     st.title("📋 IT 개발자 기술 스택 설문")
     st.markdown("---")
-    st.info("💡 **안내**: 본 설문은 비상교육 IT 개발자들의 기술력을 파악하기 위한 것입니다. 성실하게 응답해주시면 감사하겠습니다.")
-    st.markdown("---")
+    
+    # 안내 메시지
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); 
+                padding: 1.5rem; 
+                border-radius: 15px; 
+                border-left: 5px solid #667eea;
+                margin-bottom: 2rem;">
+        <h4 style="color: #667eea; margin: 0 0 0.5rem 0;">💡 안내</h4>
+        <p style="margin: 0; color: #2d3436;">
+            본 설문은 비상교육 IT 개발자들의 기술력을 파악하기 위한 것입니다.<br>
+            성실하게 응답해주시면 감사하겠습니다.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # 세션 상태 초기화
     if 'submitted' not in st.session_state:
         st.session_state.submitted = False
     
     if st.session_state.submitted:
-        st.success("✅ 설문이 성공적으로 제출되었습니다! 감사합니다.")
-        if st.button("새 설문 작성하기"):
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); 
+                    padding: 2rem; 
+                    border-radius: 15px; 
+                    border-left: 5px solid #00b894;
+                    text-align: center;
+                    margin: 2rem 0;">
+            <h2 style="color: #00b894; margin: 0 0 1rem 0;">✅ 설문이 성공적으로 제출되었습니다!</h2>
+            <p style="color: #2d3436; font-size: 1.1rem; margin: 0;">감사합니다. 🙏</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("🔄 새 설문 작성하기", type="primary", use_container_width=True):
             st.session_state.submitted = False
             st.rerun()
-        return
-    
-    # Google Sheets 설정 (Streamlit Secrets 사용)
-    if 'GOOGLE_SHEETS_CREDENTIALS' not in st.secrets or 'SPREADSHEET_ID' not in st.secrets:
-        st.warning("⚠️ Google Sheets 설정이 필요합니다.")
-        st.info("""
-        **설정 방법:**
-        1. Google Cloud Console에서 서비스 계정 생성
-        2. 서비스 계정 JSON 키 다운로드
-        3. Streamlit Secrets에 추가:
-           - `.streamlit/secrets.toml` 파일 생성
-           - `GOOGLE_SHEETS_CREDENTIALS`에 JSON 내용 추가
-           - `SPREADSHEET_ID`에 Google Sheet ID 추가
-        """)
         return
     
     # Google Sheets 초기화 (연결 실패해도 설문은 진행 가능)
@@ -329,86 +444,114 @@ def main():
     sheets_error = None
     
     try:
-        creds_value = st.secrets['GOOGLE_SHEETS_CREDENTIALS']
-        spreadsheet_id = st.secrets['SPREADSHEET_ID']
-        
-        # Secrets에서 가져온 값이 딕셔너리인 경우 (TOML이 자동 파싱한 경우)
-        if isinstance(creds_value, dict):
-            # 이미 딕셔너리이므로 그대로 사용
-            credentials_dict = creds_value
-        elif isinstance(creds_value, str):
-            # 문자열인 경우 JSON 파싱
-            try:
-                credentials_dict = json.loads(creds_value.strip())
-            except json.JSONDecodeError:
-                sheets_error = "JSON 파싱 실패: Secrets의 GOOGLE_SHEETS_CREDENTIALS 형식을 확인해주세요."
+        if 'GOOGLE_SHEETS_CREDENTIALS' in st.secrets and 'SPREADSHEET_ID' in st.secrets:
+            creds_value = st.secrets['GOOGLE_SHEETS_CREDENTIALS']
+            spreadsheet_id = st.secrets['SPREADSHEET_ID']
+            
+            # Secrets에서 가져온 값이 딕셔너리인 경우 (TOML이 자동 파싱한 경우)
+            if isinstance(creds_value, dict):
+                # 이미 딕셔너리이므로 그대로 사용
+                credentials_dict = creds_value
+            elif isinstance(creds_value, str):
+                # 문자열인 경우 JSON 파싱
+                try:
+                    credentials_dict = json.loads(creds_value.strip())
+                except json.JSONDecodeError:
+                    sheets_error = "JSON 파싱 실패: Secrets의 GOOGLE_SHEETS_CREDENTIALS 형식을 확인해주세요."
+            else:
+                sheets_error = f"잘못된 형식: {type(creds_value).__name__}"
+            
+            if sheets_error is None:
+                sheet = init_google_sheets(credentials_dict, spreadsheet_id)
+                if sheet is None:
+                    sheets_error = "Google Sheets 연결 실패"
         else:
-            sheets_error = f"잘못된 형식: {type(creds_value).__name__}"
-        
-        if sheets_error is None:
-            sheet = init_google_sheets(credentials_dict, spreadsheet_id)
-            if sheet is None:
-                sheets_error = "Google Sheets 연결 실패"
-    except KeyError as e:
-        sheets_error = f"Secrets에 필요한 키가 없습니다: {e}"
+            sheets_error = "Secrets에 GOOGLE_SHEETS_CREDENTIALS 또는 SPREADSHEET_ID가 설정되지 않았습니다."
     except Exception as e:
         sheets_error = f"설정 오류: {str(e)}"
     
     # Google Sheets 연결 실패 시 경고만 표시 (설문은 계속 진행)
     if sheets_error:
-        st.warning(f"⚠️ Google Sheets 연결 오류: {sheets_error}")
-        st.info("💡 **참고**: 설문은 진행할 수 있지만, 응답이 저장되지 않을 수 있습니다. Secrets 설정을 확인해주세요.")
-        st.markdown("---")
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); 
+                    padding: 1rem; 
+                    border-radius: 10px; 
+                    border-left: 5px solid #f39c12;
+                    margin-bottom: 1rem;">
+            <strong>⚠️ Google Sheets 연결 오류:</strong> {sheets_error}<br>
+            <small>💡 참고: 설문은 진행할 수 있지만, 응답이 저장되지 않을 수 있습니다.</small>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
     
     # 이름 입력
-    st.subheader("0️⃣ 이름 입력")
+    st.markdown("### 0️⃣ 이름 입력")
     name = st.text_input(
         "귀하의 이름을 입력해주세요:",
         key="name",
-        placeholder="홍길동"
+        placeholder="홍길동",
+        label_visibility="visible"
     )
     
     if not name or name.strip() == "":
         st.info("👆 위에 이름을 입력해주세요.")
-        return
+        st.stop()  # stop()을 사용하여 아래 코드는 실행하지 않지만 UI는 유지
     
     st.markdown("---")
     
     # 직군 선택
-    st.subheader("1️⃣ 직군 선택")
+    st.markdown("### 1️⃣ 직군 선택")
     selected_role = st.selectbox(
         "귀하의 직군을 선택해주세요:",
         options=[""] + JOB_ROLES,
-        key="job_role"
+        key="job_role",
+        label_visibility="visible"
     )
     
     if not selected_role:
         st.info("👆 위에서 직군을 선택해주세요.")
-        return
+        st.stop()  # stop()을 사용하여 아래 코드는 실행하지 않지만 UI는 유지
     
     st.markdown("---")
     
     # 선택한 직군의 기술 스택 표시
-    st.subheader(f"2️⃣ 기술 스택 선택 ({selected_role})")
-    st.caption("💡 각 카테고리에서 본인이 다룰 수 있는 기술을 모두 선택해주세요. (복수 선택 가능)")
+    st.markdown(f"### 2️⃣ 기술 스택 선택 ({selected_role})")
+    st.markdown("""
+    <div style="background: #f8f9fa; 
+                padding: 1rem; 
+                border-radius: 10px; 
+                margin-bottom: 1.5rem;
+                border-left: 4px solid #667eea;">
+        <strong>💡 안내:</strong> 각 카테고리에서 본인이 다룰 수 있는 기술을 모두 선택해주세요. (복수 선택 가능)
+    </div>
+    """, unsafe_allow_html=True)
     
     tech_data = TECH_STACK[selected_role]
     form_data = {"이름": name.strip(), "직군": selected_role}
     
     # 각 카테고리별로 멀티셀렉트 박스 생성
-    for category, options in tech_data.items():
+    for idx, (category, options) in enumerate(tech_data.items(), 1):
+        st.markdown(f"#### 📌 {category}")
         selected = st.multiselect(
-            f"**{category}** (복수 선택 가능):",
+            f"{category} (복수 선택 가능):",
             options=options,
             key=f"{selected_role}_{category}",
-            help=f"{category} 관련 기술 중 본인이 다룰 수 있는 항목을 모두 선택해주세요."
+            help=f"{category} 관련 기술 중 본인이 다룰 수 있는 항목을 모두 선택해주세요.",
+            label_visibility="collapsed"
         )
         form_data[category] = selected
+        if idx < len(tech_data):
+            st.markdown("<br>", unsafe_allow_html=True)
     
     st.markdown("---")
     
     # 제출 버튼
-    col1, col2, col3 = st.columns([1, 1, 1])
+    st.markdown("""
+    <div style="text-align: center; margin: 2rem 0;">
+    </div>
+    """, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         submit_button = st.button("📤 설문 제출하기", type="primary", use_container_width=True)
     
