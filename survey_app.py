@@ -683,7 +683,7 @@ def main():
     with col1:
         import os
         if os.path.exists("visang_logo.png"):
-            st.image("visang_logo.png", width=150)
+            st.image("visang_logo.png", width=250)
         else:
             st.markdown('<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>', unsafe_allow_html=True)
     
@@ -696,7 +696,7 @@ def main():
     st.markdown("""
     <div class="hero-section">
         <div class="hero-content">
-            <div class="hero-text">안녕하세요, CP님. 설문에 응해주셔서 감사합니다.</div>
+            <div class="hero-text">안녕하세요, CP님.<br>설문에 응해주셔서 감사합니다.</div>
             <div class="hero-subtext">비상교육 IT/Data 분야 전문가분들의 기술 스택을 체계적으로 파악하여<br>조직 내 기술 역량에 대한 이해도를 제고하고자, 관련 설문을 시작하겠습니다.</div>
         </div>
     </div>
