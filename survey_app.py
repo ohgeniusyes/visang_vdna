@@ -425,7 +425,7 @@ def main():
         backdrop-filter: blur(10px);
         border-radius: 32px;
         padding: 4rem 5rem;
-        margin: -5rem auto 4rem auto;
+        margin: 2rem auto 4rem auto;
         max-width: 1200px;
         box-shadow: 0 32px 80px rgba(0,0,0,0.2);
         position: relative;
@@ -705,9 +705,6 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # 설문 컨테이너 시작
-    st.markdown('<div class="survey-container">', unsafe_allow_html=True)
-    
     # 세션 상태 초기화
     if 'submitted' not in st.session_state:
         st.session_state.submitted = False
@@ -776,6 +773,9 @@ def main():
             <small style="color: #856404;">💡 참고: 설문은 진행할 수 있지만, 응답이 저장되지 않을 수 있습니다.</small>
         </div>
         """, unsafe_allow_html=True)
+    
+    # 설문 컨테이너 시작 (안내 메시지와 함께)
+    st.markdown('<div class="survey-container">', unsafe_allow_html=True)
     
     # 안내 메시지
     st.markdown("""
