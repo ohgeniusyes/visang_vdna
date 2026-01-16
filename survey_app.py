@@ -791,35 +791,44 @@ def main():
             height=100,
             help="기술명과 숙련도를 함께 입력해주세요."
         )
-        form_data = {"이름": name.strip(), "직군": selected_role, "기술 스택": custom_tech}
+        form_data = {"이름": name.strip(), "직군": selected_role, "기술 스택": custom_tech if custom_tech else ""}
     else:
-        tech_data = TECH_STACK.get(selected_role, {})
+        # selected_role이 TECH_STACK에 있는지 확인
+        original_role = selected_role
+        if original_role not in TECH_STACK:
+            # "기타 (입력내용)" 형식이 아닌 경우에만 처리
+            tech_data = {}
+            st.warning(f"⚠️ '{original_role}' 직군에 대한 기술 스택 정보가 없습니다.")
+        else:
+            tech_data = TECH_STACK[original_role]
+        
         form_data = {"이름": name.strip(), "직군": selected_role}
         
         # 각 카테고리별로 기술 선택
-        for category, options in tech_data.items():
-            st.markdown(f"#### 📌 {category}")
-            
-            # 각 기술에 대해 4단계 선택
-            category_data = {}
-            for tech in options:
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.markdown(f"<div style='padding: 0.5rem 0;'><strong>{tech}</strong></div>", unsafe_allow_html=True)
-                with col2:
-                    level = st.selectbox(
-                        f"{tech} 숙련도",
-                        options=["선택 안함", "입문", "초급", "중급", "고급"],
-                        key=f"{selected_role}_{category}_{tech}",
-                        label_visibility="collapsed"
-                    )
-                    if level != "선택 안함":
-                        category_data[tech] = level
-            
-            if category_data:
-                form_data[category] = category_data
-            
-            st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
+        if tech_data:
+            for category, options in tech_data.items():
+                st.markdown(f"#### 📌 {category}")
+                
+                # 각 기술에 대해 4단계 선택
+                category_data = {}
+                for tech in options:
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        st.markdown(f"<div style='padding: 0.5rem 0;'><strong>{tech}</strong></div>", unsafe_allow_html=True)
+                    with col2:
+                        level = st.selectbox(
+                            f"{tech} 숙련도",
+                            options=["선택 안함", "입문", "초급", "중급", "고급"],
+                            key=f"{selected_role}_{category}_{tech}",
+                            label_visibility="collapsed"
+                        )
+                        if level != "선택 안함":
+                            category_data[tech] = level
+                
+                if category_data:
+                    form_data[category] = category_data
+                
+                st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -832,6 +841,7 @@ def main():
     # 설문 컨테이너 닫기
     st.markdown('</div>', unsafe_allow_html=True)
     
+    # 제출 버튼 클릭 시 처리
     if submit_button:
         # 데이터 검증
         if selected_role.startswith("기타"):
@@ -860,16 +870,16 @@ def main():
             if not has_selection:
                 st.warning("⚠️ 최소 하나 이상의 기술을 선택해주세요.")
             else:
-            # Google Sheets에 저장 시도
-            if sheet is not None:
-                if save_to_sheets(sheet, form_data):
-                    st.session_state.submitted = True
-                    st.rerun()
+                # Google Sheets에 저장 시도
+                if sheet is not None:
+                    if save_to_sheets(sheet, form_data):
+                        st.session_state.submitted = True
+                        st.rerun()
+                    else:
+                        st.error("❌ 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
                 else:
-                    st.error("❌ 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
-            else:
-                st.error("❌ Google Sheets 연결이 되어 있지 않아 응답을 저장할 수 없습니다.")
-                st.info("💡 **해결 방법**: Streamlit Cloud Secrets 설정을 확인해주세요.")
+                    st.error("❌ Google Sheets 연결이 되어 있지 않아 응답을 저장할 수 없습니다.")
+                    st.info("💡 **해결 방법**: Streamlit Cloud Secrets 설정을 확인해주세요.")
     
     # 푸터
     st.markdown("""
