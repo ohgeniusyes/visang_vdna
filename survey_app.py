@@ -674,27 +674,23 @@ def main():
     """, unsafe_allow_html=True)
     
     # 비상 브랜드 헤더
-    # visang 로고 이미지 사용 (base64 인코딩)
-    import os
-    logo_html = '<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>'
-    
-    if os.path.exists("visang_logo.png"):
-        try:
-            with open("visang_logo.png", "rb") as f:
-                logo_data = f.read()
-                logo_base64 = base64.b64encode(logo_data).decode()
-                logo_html = f'<img src="data:image/png;base64,{logo_base64}" alt="visang" style="height: 2.5rem; width: auto;">'
-        except Exception as e:
-            pass  # 오류 시 텍스트 로고 사용
-    
-    st.markdown(f"""
+    st.markdown("""
     <div class="visang-header">
-        <div style="display: flex; align-items: center;">
-            {logo_html}
-        </div>
-        <div style="color: #1a1a1a; font-size: 1rem; font-weight: 500;">IT개발자/데이터 전문가 기술 스택 설문</div>
-    </div>
     """, unsafe_allow_html=True)
+    
+    # 헤더 내용을 columns로 배치
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        import os
+        if os.path.exists("visang_logo.png"):
+            st.image("visang_logo.png", width=150)
+        else:
+            st.markdown('<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>', unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown('<div style="text-align: right; color: #1a1a1a; font-size: 1rem; font-weight: 500; padding-top: 0.5rem;">IT개발자/데이터 전문가 기술 스택 설문</div>', unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
     
     # 히어로 섹션
     st.markdown("""
