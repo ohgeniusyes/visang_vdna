@@ -935,10 +935,11 @@ def main():
             for category, options in tech_data.items():
                 st.markdown(f"#### 📌 {category}")
                 
-                # 각 기술에 대해 4단계 선택 (버튼 형태)
+                # 각 기술에 대해 5단계 선택 (버튼 형태)
                 category_data = {}
                 for tech in options:
-                    st.markdown(f"<div style='margin-bottom: 1rem;'><strong style='font-size: 1.1rem; color: #1a1a1a;'>{tech}</strong></div>", unsafe_allow_html=True)
+                    # 기술명을 더 크게 표시
+                    st.markdown(f"<div style='margin-bottom: 1.5rem;'><strong style='font-size: 1.6rem; color: #1a1a1a; font-weight: 700;'>{tech}</strong></div>", unsafe_allow_html=True)
                     
                     # 세션 상태에서 현재 선택된 레벨 가져오기
                     level_key = f"{selected_role}_{category}_{tech}_level"
@@ -950,7 +951,7 @@ def main():
                     levels = ["해당없음", "입문", "초급", "중급", "고급"]
                     level_icons = ["➖", "🔰", "📚", "⚙️", "🏆"]
                     level_colors = [
-                        "#e0e0e0",  # 해당없음 - 회색
+                        "#d0d0d0",  # 해당없음 - 회색
                         "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",  # 입문 - 핑크
                         "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",  # 초급 - 블루
                         "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",  # 중급 - 그린
@@ -958,35 +959,10 @@ def main():
                     ]
                     
                     selected_level = st.session_state[level_key]
+                    selected_idx = levels.index(selected_level) if selected_level in levels else 0
+                    selected_color = level_colors[selected_idx]
                     
-                    # 각 버튼에 대한 CSS 생성
-                    css_styles = ""
-                    for idx, (level, color) in enumerate(zip(levels, level_colors)):
-                        button_key = f"{level_key}_{level}"
-                        if selected_level == level:
-                            if level == "해당없음":
-                                css_styles += f"""
-                                button[data-testid="baseButton-primary"][aria-label*="{button_key}"] {{
-                                    background: {color} !important;
-                                    border: 2px solid #999 !important;
-                                    color: #666 !important;
-                                    font-weight: 700 !important;
-                                }}
-                                """
-                            else:
-                                css_styles += f"""
-                                button[data-testid="baseButton-primary"][aria-label*="{button_key}"] {{
-                                    background: {color} !important;
-                                    border: none !important;
-                                    color: white !important;
-                                    font-weight: 700 !important;
-                                    box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
-                                }}
-                                """
-                    
-                    if css_styles:
-                        st.markdown(f"<style>{css_styles}</style>", unsafe_allow_html=True)
-                    
+                    # 버튼 렌더링
                     for idx, (level, icon, color) in enumerate(zip(levels, level_icons, level_colors)):
                         with cols[idx]:
                             is_selected = selected_level == level
@@ -1000,6 +976,57 @@ def main():
                             ):
                                 st.session_state[level_key] = level
                                 st.rerun()
+                    
+                    # 선택된 버튼에 색상 적용을 위한 CSS (버튼 렌더링 후)
+                    if selected_level == "해당없음":
+                        button_css = f"""
+                        <style>
+                        button[data-testid="baseButton-primary"][aria-label*="{level_key}_해당없음"] {{
+                            background: #d0d0d0 !important;
+                            border: 2px solid #999 !important;
+                            color: #666 !important;
+                            font-weight: 700 !important;
+                            font-size: 0.75rem !important;
+                            padding: 0.4rem 0.5rem !important;
+                            box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important;
+                        }}
+                        </style>
+                        """
+                    else:
+                        button_css = f"""
+                        <style>
+                        button[data-testid="baseButton-primary"][aria-label*="{level_key}_{selected_level}"] {{
+                            background: {selected_color} !important;
+                            border: none !important;
+                            color: white !important;
+                            font-weight: 700 !important;
+                            font-size: 0.75rem !important;
+                            padding: 0.4rem 0.5rem !important;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+                        }}
+                        </style>
+                        """
+                    
+                    # 모든 버튼 크기 조정
+                    all_buttons_css = """
+                    <style>
+                    button[data-testid="baseButton-secondary"],
+                    button[data-testid="baseButton-primary"] {
+                        font-size: 0.75rem !important;
+                        padding: 0.4rem 0.5rem !important;
+                        min-height: auto !important;
+                    }
+                    </style>
+                    """
+                    st.markdown(all_buttons_css + button_css, unsafe_allow_html=True)
+                    
+                    # 선택된 내용 텍스트로 표시
+                    selected_icon = level_icons[selected_idx]
+                    if selected_level == "해당없음":
+                        status_text = f'<div style="margin-top: 0.75rem; padding: 0.75rem 1rem; background: #f5f5f5; border-radius: 8px; border-left: 4px solid #999;"><span style="color: #666; font-size: 0.95rem;">선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
+                    else:
+                        status_text = f'<div style="margin-top: 0.75rem; padding: 0.75rem 1rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 8px; border-left: 4px solid #667eea;"><span style="color: #667eea; font-size: 0.95rem;">✓ 선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
+                    st.markdown(status_text, unsafe_allow_html=True)
                     
                     current_level = st.session_state[level_key]
                     if current_level != "해당없음":
