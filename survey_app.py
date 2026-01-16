@@ -674,22 +674,15 @@ def main():
     """, unsafe_allow_html=True)
     
     # 비상 브랜드 헤더
-    # 로고 이미지 (로컬 파일이 있으면 사용, 없으면 웹 URL 사용)
-    try:
-        logo_path = "assets/visang_logo.png"
-        import os
-        if os.path.exists(logo_path):
-            logo_html = f'<img src="{logo_path}" alt="visang" style="height: 2rem;">'
-        else:
-            # 비상교육 웹사이트 로고 또는 기본 텍스트 로고
-            logo_html = '<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>'
-    except:
-        logo_html = '<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>'
-    
-    st.markdown(f"""
+    # visang 로고 이미지 사용
+    st.markdown("""
     <div class="visang-header">
         <div style="display: flex; align-items: center;">
-            {logo_html}
+            <img src="https://career.visang.com/static/images/logo.svg" 
+                 alt="visang" 
+                 style="height: 2.5rem; width: auto;"
+                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div class="visang-logo" style="display: none; font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>
         </div>
         <div style="color: #1a1a1a; font-size: 1rem; font-weight: 500;">IT개발자/데이터 전문가 기술 스택 설문</div>
     </div>
