@@ -324,34 +324,41 @@ def main():
         """)
         return
     
-    # Google Sheets 초기화
+    # Google Sheets 초기화 (연결 실패해도 설문은 진행 가능)
+    sheet = None
+    sheets_error = None
+    
     try:
         creds_value = st.secrets['GOOGLE_SHEETS_CREDENTIALS']
         spreadsheet_id = st.secrets['SPREADSHEET_ID']
+        
+        # Secrets에서 가져온 값이 딕셔너리인 경우 (TOML이 자동 파싱한 경우)
+        if isinstance(creds_value, dict):
+            # 이미 딕셔너리이므로 그대로 사용
+            credentials_dict = creds_value
+        elif isinstance(creds_value, str):
+            # 문자열인 경우 JSON 파싱
+            try:
+                credentials_dict = json.loads(creds_value.strip())
+            except json.JSONDecodeError:
+                sheets_error = "JSON 파싱 실패: Secrets의 GOOGLE_SHEETS_CREDENTIALS 형식을 확인해주세요."
+        else:
+            sheets_error = f"잘못된 형식: {type(creds_value).__name__}"
+        
+        if sheets_error is None:
+            sheet = init_google_sheets(credentials_dict, spreadsheet_id)
+            if sheet is None:
+                sheets_error = "Google Sheets 연결 실패"
     except KeyError as e:
-        st.error(f"Secrets에 필요한 키가 없습니다: {e}")
-        return
+        sheets_error = f"Secrets에 필요한 키가 없습니다: {e}"
+    except Exception as e:
+        sheets_error = f"설정 오류: {str(e)}"
     
-    # Secrets에서 가져온 값이 딕셔너리인 경우 (TOML이 자동 파싱한 경우)
-    if isinstance(creds_value, dict):
-        # 이미 딕셔너리이므로 그대로 사용
-        credentials_dict = creds_value
-    elif isinstance(creds_value, str):
-        # 문자열인 경우 JSON 파싱
-        try:
-            credentials_dict = json.loads(creds_value.strip())
-        except json.JSONDecodeError:
-            st.error("❌ JSON 파싱 실패: Secrets의 GOOGLE_SHEETS_CREDENTIALS 형식을 확인해주세요.")
-            st.info("💡 **해결 방법**: Streamlit Cloud Secrets에서 JSON을 삼중 따옴표(''')로 감싸서 입력하세요.")
-            return
-    else:
-        st.error(f"❌ 잘못된 형식: {type(creds_value).__name__}")
-        return
-    
-    sheet = init_google_sheets(credentials_dict, spreadsheet_id)
-    
-    if sheet is None:
-        return
+    # Google Sheets 연결 실패 시 경고만 표시 (설문은 계속 진행)
+    if sheets_error:
+        st.warning(f"⚠️ Google Sheets 연결 오류: {sheets_error}")
+        st.info("💡 **참고**: 설문은 진행할 수 있지만, 응답이 저장되지 않을 수 있습니다. Secrets 설정을 확인해주세요.")
+        st.markdown("---")
     
     # 이름 입력
     st.subheader("0️⃣ 이름 입력")
@@ -412,12 +419,16 @@ def main():
         if total_selected == 0:
             st.warning("⚠️ 최소 하나 이상의 기술을 선택해주세요.")
         else:
-            # Google Sheets에 저장
-            if save_to_sheets(sheet, form_data):
-                st.session_state.submitted = True
-                st.rerun()
+            # Google Sheets에 저장 시도
+            if sheet is not None:
+                if save_to_sheets(sheet, form_data):
+                    st.session_state.submitted = True
+                    st.rerun()
+                else:
+                    st.error("❌ 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
             else:
-                st.error("❌ 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
+                st.error("❌ Google Sheets 연결이 되어 있지 않아 응답을 저장할 수 없습니다.")
+                st.info("💡 **해결 방법**: Streamlit Cloud Secrets 설정을 확인해주세요.")
 
 if __name__ == "__main__":
     main()
