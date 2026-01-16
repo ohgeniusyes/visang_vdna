@@ -3,6 +3,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 import pandas as pd
+import json
+import base64
 
 # 페이지 설정
 st.set_page_config(
@@ -233,15 +235,29 @@ TECH_STACK = {
 # 직군 목록
 JOB_ROLES = list(TECH_STACK.keys())
 
-def init_google_sheets(credentials_json, spreadsheet_id):
+def init_google_sheets(credentials_dict, spreadsheet_id):
     """Google Sheets 초기화"""
     try:
-        creds = Credentials.from_service_account_info(credentials_json, scopes=SCOPE)
+        # 딕셔너리인지 확인
+        if not isinstance(credentials_dict, dict):
+            st.error(f"❌ 잘못된 형식: 딕셔너리가 필요합니다. 현재 타입: {type(credentials_dict).__name__}")
+            return None
+        
+        # 필수 키 확인
+        required_keys = ["type", "project_id", "private_key", "client_email"]
+        missing_keys = [key for key in required_keys if key not in credentials_dict]
+        if missing_keys:
+            st.error(f"❌ 필수 키가 누락되었습니다: {missing_keys}")
+            return None
+        
+        # Google 인증
+        creds = Credentials.from_service_account_info(credentials_dict, scopes=SCOPE)
         client = gspread.authorize(creds)
         sheet = client.open_by_key(spreadsheet_id)
         return sheet
     except Exception as e:
-        st.error(f"Google Sheets 연결 오류: {str(e)}")
+        st.error(f"❌ Google Sheets 연결 오류: {str(e)}")
+        st.info("💡 **확인 사항**:\n1. Google Sheets에 서비스 계정 이메일이 공유되어 있는지 확인\n2. 서비스 계정에 '편집자' 권한이 있는지 확인")
         return None
 
 def save_to_sheets(sheet, data):
@@ -309,10 +325,30 @@ def main():
         return
     
     # Google Sheets 초기화
-    sheet = init_google_sheets(
-        st.secrets['GOOGLE_SHEETS_CREDENTIALS'],
-        st.secrets['SPREADSHEET_ID']
-    )
+    try:
+        creds_value = st.secrets['GOOGLE_SHEETS_CREDENTIALS']
+        spreadsheet_id = st.secrets['SPREADSHEET_ID']
+    except KeyError as e:
+        st.error(f"Secrets에 필요한 키가 없습니다: {e}")
+        return
+    
+    # Secrets에서 가져온 값이 딕셔너리인 경우 (TOML이 자동 파싱한 경우)
+    if isinstance(creds_value, dict):
+        # 이미 딕셔너리이므로 그대로 사용
+        credentials_dict = creds_value
+    elif isinstance(creds_value, str):
+        # 문자열인 경우 JSON 파싱
+        try:
+            credentials_dict = json.loads(creds_value.strip())
+        except json.JSONDecodeError:
+            st.error("❌ JSON 파싱 실패: Secrets의 GOOGLE_SHEETS_CREDENTIALS 형식을 확인해주세요.")
+            st.info("💡 **해결 방법**: Streamlit Cloud Secrets에서 JSON을 삼중 따옴표(''')로 감싸서 입력하세요.")
+            return
+    else:
+        st.error(f"❌ 잘못된 형식: {type(creds_value).__name__}")
+        return
+    
+    sheet = init_google_sheets(credentials_dict, spreadsheet_id)
     
     if sheet is None:
         return
