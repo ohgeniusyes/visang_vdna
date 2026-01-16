@@ -507,6 +507,59 @@ def main():
         box-shadow: 0 4px 16px rgba(250, 112, 154, 0.4);
     }
     
+    /* 기술 수준 선택 버튼 스타일 */
+    button[data-testid="baseButton-secondary"],
+    button[data-testid="baseButton-primary"] {{
+        font-size: 0.75rem !important;
+        padding: 0.4rem 0.5rem !important;
+        min-height: auto !important;
+    }}
+    
+    /* 해당없음 버튼이 선택된 경우 (기본값) */
+    button[data-testid="baseButton-primary"][aria-label*="_level_해당없음"] {{
+        background: #d0d0d0 !important;
+        border: 2px solid #999 !important;
+        color: #666 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important;
+    }}
+    
+    /* 입문 버튼이 선택된 경우 */
+    button[data-testid="baseButton-primary"][aria-label*="_level_입문"] {{
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        border: none !important;
+        color: white !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }}
+    
+    /* 초급 버튼이 선택된 경우 */
+    button[data-testid="baseButton-primary"][aria-label*="_level_초급"] {{
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+        border: none !important;
+        color: white !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }}
+    
+    /* 중급 버튼이 선택된 경우 */
+    button[data-testid="baseButton-primary"][aria-label*="_level_중급"] {{
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+        border: none !important;
+        color: white !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }}
+    
+    /* 고급 버튼이 선택된 경우 */
+    button[data-testid="baseButton-primary"][aria-label*="_level_고급"] {{
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+        border: none !important;
+        color: white !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }}
+    
     /* 제목 스타일 */
     h1 {
         color: #2661E8;
@@ -976,49 +1029,6 @@ def main():
                             ):
                                 st.session_state[level_key] = level
                                 st.rerun()
-                    
-                    # 선택된 버튼에 색상 적용을 위한 CSS (버튼 렌더링 후)
-                    if selected_level == "해당없음":
-                        button_css = f"""
-                        <style>
-                        button[data-testid="baseButton-primary"][aria-label*="{level_key}_해당없음"] {{
-                            background: #d0d0d0 !important;
-                            border: 2px solid #999 !important;
-                            color: #666 !important;
-                            font-weight: 700 !important;
-                            font-size: 0.75rem !important;
-                            padding: 0.4rem 0.5rem !important;
-                            box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important;
-                        }}
-                        </style>
-                        """
-                    else:
-                        button_css = f"""
-                        <style>
-                        button[data-testid="baseButton-primary"][aria-label*="{level_key}_{selected_level}"] {{
-                            background: {selected_color} !important;
-                            border: none !important;
-                            color: white !important;
-                            font-weight: 700 !important;
-                            font-size: 0.75rem !important;
-                            padding: 0.4rem 0.5rem !important;
-                            box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
-                        }}
-                        </style>
-                        """
-                    
-                    # 모든 버튼 크기 조정
-                    all_buttons_css = """
-                    <style>
-                    button[data-testid="baseButton-secondary"],
-                    button[data-testid="baseButton-primary"] {
-                        font-size: 0.75rem !important;
-                        padding: 0.4rem 0.5rem !important;
-                        min-height: auto !important;
-                    }
-                    </style>
-                    """
-                    st.markdown(all_buttons_css + button_css, unsafe_allow_html=True)
                     
                     # 선택된 내용 텍스트로 표시
                     selected_icon = level_icons[selected_idx]
