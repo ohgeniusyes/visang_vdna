@@ -266,26 +266,45 @@ def save_to_sheets(sheet, data):
     try:
         worksheet = sheet.sheet1
         
+        # 데이터를 문자열로 변환
+        formatted_data = {}
+        for key, value in data.items():
+            if key in ["이름", "직군"]:
+                formatted_data[key] = value
+            elif isinstance(value, dict):
+                # 딕셔너리 형태: {기술명: 수준}
+                tech_list = [f"{tech} ({level})" for tech, level in value.items()]
+                formatted_data[key] = ", ".join(tech_list) if tech_list else ""
+            elif isinstance(value, list):
+                formatted_data[key] = ", ".join(value) if value else ""
+            else:
+                formatted_data[key] = str(value) if value else ""
+        
         # 헤더가 없으면 추가
         if worksheet.row_count == 0:
-            headers = ["타임스탬프", "이름", "직군"] + [k for k in data.keys() if k not in ["이름", "직군"]]
+            headers = ["타임스탬프", "이름", "직군"] + [k for k in formatted_data.keys() if k not in ["이름", "직군"]]
             worksheet.append_row(headers)
         else:
             # 기존 헤더 읽기
             headers = worksheet.row_values(1)
+            # 새로운 헤더 추가
+            existing_headers = set(headers)
+            new_headers = [k for k in formatted_data.keys() if k not in ["이름", "직군"] and k not in existing_headers]
+            if new_headers:
+                headers.extend(new_headers)
+                worksheet.insert_row(headers, 1)
+                worksheet.delete_rows(2)
         
         # 데이터 추가
         row = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
-            data.get("이름", ""),
-            data.get("직군", "")
+            formatted_data.get("이름", ""),
+            formatted_data.get("직군", "")
         ]
         
         # 나머지 카테고리 데이터 추가
         for key in headers[3:]:  # 타임스탬프, 이름, 직군 제외
-            value = data.get(key, "")
-            if isinstance(value, list):
-                value = ", ".join(value)
+            value = formatted_data.get(key, "")
             row.append(value)
         
         worksheet.append_row(row)
@@ -341,9 +360,9 @@ def main():
     
     /* 히어로 섹션 */
     .hero-section {
-        background: #2661E8;
-        padding: 6rem 4rem;
-        min-height: 70vh;
+        background: linear-gradient(135deg, #2661E8 0%, #1e4fc7 100%);
+        padding: 8rem 4rem 6rem 4rem;
+        min-height: 60vh;
         display: flex;
         align-items: center;
         position: relative;
@@ -357,29 +376,30 @@ def main():
     
     .hero-text {
         color: white;
-        font-size: 3.5rem;
+        font-size: 3.8rem;
         font-weight: 700;
-        line-height: 1.2;
-        margin-bottom: 2rem;
-        letter-spacing: -1px;
+        line-height: 1.3;
+        margin-bottom: 2.5rem;
+        letter-spacing: -1.5px;
     }
     
     .hero-subtext {
-        color: white;
-        font-size: 2rem;
-        font-weight: 600;
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.8rem;
+        font-weight: 400;
+        line-height: 1.8;
         margin-bottom: 3rem;
-        letter-spacing: -0.5px;
+        letter-spacing: -0.3px;
     }
     
     /* 설문 컨테이너 - 흰색 카드 */
     .survey-container {
         background: white;
-        border-radius: 20px;
-        padding: 3rem 4rem;
-        margin: -5rem auto 4rem auto;
-        max-width: 1000px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        border-radius: 24px;
+        padding: 4rem 5rem;
+        margin: -6rem auto 4rem auto;
+        max-width: 1100px;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.12);
         position: relative;
         z-index: 10;
     }
@@ -435,6 +455,21 @@ def main():
     }
     
     .stSelectbox > div > div > select:focus {
+        border-color: #2661E8;
+        box-shadow: 0 0 0 4px rgba(38, 97, 232, 0.1);
+        outline: none;
+    }
+    
+    /* Textarea 스타일 */
+    .stTextArea > div > div > textarea {
+        border-radius: 12px;
+        border: 2px solid #e0e0e0;
+        padding: 1rem;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+    }
+    
+    .stTextArea > div > div > textarea:focus {
         border-color: #2661E8;
         box-shadow: 0 0 0 4px rgba(38, 97, 232, 0.1);
         outline: none;
@@ -565,7 +600,7 @@ def main():
     <div class="hero-section">
         <div class="hero-content">
             <div class="hero-text">안녕하세요 CP님!</div>
-            <div class="hero-subtext">어떤 기술 스택을 보유하고 계신가요?</div>
+            <div class="hero-subtext">비상교육 IT/Data 전문가 분들의 기술 스택을 파악하여<br>더 나은 협업과 성장의 기회를 만들어가고자 합니다.</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -676,48 +711,115 @@ def main():
     
     # 직군 선택
     st.markdown("### 1️⃣ 직군 선택")
+    role_options = [""] + JOB_ROLES + ["기타"]
     selected_role = st.selectbox(
         "귀하의 직군을 선택해주세요:",
-        options=[""] + JOB_ROLES,
+        options=role_options,
         key="job_role",
         label_visibility="visible"
     )
     
-    if not selected_role:
+    # 기타 선택 시 주관식 입력
+    other_role = ""
+    if selected_role == "기타":
+        other_role = st.text_input(
+            "직군을 입력해주세요:",
+            key="other_role",
+            placeholder="예: QA 엔지니어, 인프라 엔지니어 등",
+            label_visibility="visible"
+        )
+        if not other_role or other_role.strip() == "":
+            st.info("👆 기타 직군을 입력해주세요.")
+            st.stop()
+        selected_role = f"기타 ({other_role.strip()})"
+    
+    if not selected_role or selected_role == "":
         st.info("👆 위에서 직군을 선택해주세요.")
         st.stop()
     
     st.markdown("---")
     
-    # 선택한 직군의 기술 스택 표시
-    st.markdown(f"### 2️⃣ 기술 스택 선택 ({selected_role})")
+    # 기술 수준 기준 설명
+    st.markdown("### 2️⃣ 기술 스택 및 숙련도 선택")
     st.markdown("""
-    <div style="background: #f8f9fa; 
-                padding: 1.25rem; 
-                border-radius: 8px; 
-                margin-bottom: 2rem;
+    <div style="background: #f0f4ff; 
+                padding: 2rem; 
+                border-radius: 12px; 
+                margin-bottom: 3rem;
                 border-left: 4px solid #2661E8;">
-        <strong style="color: #2661E8;">💡 안내:</strong> 
-        <span style="color: #1a1a1a;">각 카테고리에서 본인이 다룰 수 있는 기술을 모두 선택해주세요. (복수 선택 가능)</span>
+        <h4 style="color: #2661E8; margin: 0 0 1.5rem 0; font-size: 1.3rem; font-weight: 600;">📊 기술 숙련도 기준</h4>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 2px solid #e0e0e0;">
+                <strong style="color: #2661E8; font-size: 1.1rem;">🔰 입문</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #1a1a1a; line-height: 1.6;">
+                    기본 문법과 개념을 이해하고, 간단한 예제나 튜토리얼을 따라할 수 있는 수준
+                </p>
+            </div>
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 2px solid #e0e0e0;">
+                <strong style="color: #2661E8; font-size: 1.1rem;">📚 초급</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #1a1a1a; line-height: 1.6;">
+                    기본 기능을 활용하여 간단한 프로젝트를 독립적으로 개발할 수 있는 수준
+                </p>
+            </div>
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 2px solid #e0e0e0;">
+                <strong style="color: #2661E8; font-size: 1.1rem;">⚙️ 중급</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #1a1a1a; line-height: 1.6;">
+                    복잡한 기능 구현이 가능하고, 문제 해결을 위해 공식 문서나 커뮤니티 자료를 참고하여 해결할 수 있는 수준
+                </p>
+            </div>
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 2px solid #e0e0e0;">
+                <strong style="color: #2661E8; font-size: 1.1rem;">🏆 고급</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #1a1a1a; line-height: 1.6;">
+                    심화 기능과 최적화를 다룰 수 있고, 다른 팀원들에게 멘토링이나 기술 공유가 가능한 수준
+                </p>
+            </div>
+        </div>
+        <p style="margin: 1.5rem 0 0 0; color: #666; font-size: 0.95rem;">
+            💡 각 기술에 대해 본인의 숙련도 수준을 선택해주세요. (해당 기술을 다루지 않으시면 선택하지 않으셔도 됩니다)
+        </p>
     </div>
     """, unsafe_allow_html=True)
     
-    tech_data = TECH_STACK[selected_role]
-    form_data = {"이름": name.strip(), "직군": selected_role}
-    
-    # 각 카테고리별로 멀티셀렉트 박스 생성
-    for idx, (category, options) in enumerate(tech_data.items(), 1):
-        st.markdown(f"#### 📌 {category}")
-        selected = st.multiselect(
-            f"{category} (복수 선택 가능):",
-            options=options,
-            key=f"{selected_role}_{category}",
-            help=f"{category} 관련 기술 중 본인이 다룰 수 있는 항목을 모두 선택해주세요.",
-            label_visibility="collapsed"
+    # 직군별 기술 스택 가져오기 (기타인 경우 빈 딕셔너리)
+    if selected_role.startswith("기타"):
+        tech_data = {}
+        st.info("💡 기타 직군을 선택하셨습니다. 아래에서 사용하시는 기술 스택을 직접 입력해주세요.")
+        custom_tech = st.text_area(
+            "사용하시는 기술 스택을 입력해주세요:",
+            key="custom_tech",
+            placeholder="예: Java (중급), Python (초급), Docker (입문) 등",
+            height=100,
+            help="기술명과 숙련도를 함께 입력해주세요."
         )
-        form_data[category] = selected
-        if idx < len(tech_data):
-            st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
+        form_data = {"이름": name.strip(), "직군": selected_role, "기술 스택": custom_tech}
+    else:
+        tech_data = TECH_STACK.get(selected_role, {})
+        form_data = {"이름": name.strip(), "직군": selected_role}
+        
+        # 각 카테고리별로 기술 선택
+        for category, options in tech_data.items():
+            st.markdown(f"#### 📌 {category}")
+            
+            # 각 기술에 대해 4단계 선택
+            category_data = {}
+            for tech in options:
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.markdown(f"<div style='padding: 0.5rem 0;'><strong>{tech}</strong></div>", unsafe_allow_html=True)
+                with col2:
+                    level = st.selectbox(
+                        f"{tech} 숙련도",
+                        options=["선택 안함", "입문", "초급", "중급", "고급"],
+                        key=f"{selected_role}_{category}_{tech}",
+                        label_visibility="collapsed"
+                    )
+                    if level != "선택 안함":
+                        category_data[tech] = level
+            
+            if category_data:
+                form_data[category] = category_data
+            
+            st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -732,11 +834,32 @@ def main():
     
     if submit_button:
         # 데이터 검증
-        total_selected = sum(len(v) if isinstance(v, list) else 0 for v in form_data.values() if v not in [name.strip(), selected_role])
-        
-        if total_selected == 0:
-            st.warning("⚠️ 최소 하나 이상의 기술을 선택해주세요.")
+        if selected_role.startswith("기타"):
+            if not form_data.get("기술 스택", "").strip():
+                st.warning("⚠️ 기술 스택을 입력해주세요.")
+            else:
+                # Google Sheets에 저장 시도
+                if sheet is not None:
+                    if save_to_sheets(sheet, form_data):
+                        st.session_state.submitted = True
+                        st.rerun()
+                    else:
+                        st.error("❌ 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
+                else:
+                    st.error("❌ Google Sheets 연결이 되어 있지 않아 응답을 저장할 수 없습니다.")
+                    st.info("💡 **해결 방법**: Streamlit Cloud Secrets 설정을 확인해주세요.")
         else:
+            # 기술 스택이 하나라도 선택되었는지 확인
+            has_selection = False
+            for key, value in form_data.items():
+                if key not in ["이름", "직군"] and value:
+                    if isinstance(value, dict) and len(value) > 0:
+                        has_selection = True
+                        break
+            
+            if not has_selection:
+                st.warning("⚠️ 최소 하나 이상의 기술을 선택해주세요.")
+            else:
             # Google Sheets에 저장 시도
             if sheet is not None:
                 if save_to_sheets(sheet, form_data):
