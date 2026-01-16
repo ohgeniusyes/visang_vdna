@@ -509,56 +509,67 @@ def main():
     
     /* 기술 수준 선택 버튼 스타일 */
     button[data-testid="baseButton-secondary"],
-    button[data-testid="baseButton-primary"] {{
+    button[data-testid="baseButton-primary"] {
         font-size: 0.75rem !important;
         padding: 0.4rem 0.5rem !important;
         min-height: auto !important;
-    }}
+    }
     
-    /* 해당없음 버튼이 선택된 경우 (기본값) */
-    button[data-testid="baseButton-primary"][aria-label*="_level_해당없음"] {{
-        background: #d0d0d0 !important;
+    /* 해당없음 버튼이 선택된 경우 (기본값) - 회색 그라데이션 */
+    button[data-testid="baseButton-primary"][aria-label*="_level_해당없음"] {
+        background: linear-gradient(135deg, #b0b0b0 0%, #d0d0d0 100%) !important;
         border: 2px solid #999 !important;
-        color: #666 !important;
+        color: #333 !important;
         font-weight: 700 !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important;
-    }}
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+    }
+    
+    /* 해당없음 버튼 텍스트 포함 선택자 (더 넓은 범위) */
+    button[data-testid="baseButton-primary"] {
+        position: relative;
+    }
+    
+    button[data-testid="baseButton-primary"]:has(> div:has-text("해당없음")) {
+        background: linear-gradient(135deg, #b0b0b0 0%, #d0d0d0 100%) !important;
+        border: 2px solid #999 !important;
+        color: #333 !important;
+    }
     
     /* 입문 버튼이 선택된 경우 */
-    button[data-testid="baseButton-primary"][aria-label*="_level_입문"] {{
+    button[data-testid="baseButton-primary"][aria-label*="_level_입문"] {
         background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
         border: none !important;
         color: white !important;
         font-weight: 700 !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
-    }}
+    }
     
     /* 초급 버튼이 선택된 경우 */
-    button[data-testid="baseButton-primary"][aria-label*="_level_초급"] {{
+    button[data-testid="baseButton-primary"][aria-label*="_level_초급"] {
         background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
         border: none !important;
         color: white !important;
         font-weight: 700 !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
-    }}
+    }
     
     /* 중급 버튼이 선택된 경우 */
-    button[data-testid="baseButton-primary"][aria-label*="_level_중급"] {{
+    button[data-testid="baseButton-primary"][aria-label*="_level_중급"] {
         background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
         border: none !important;
         color: white !important;
         font-weight: 700 !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
-    }}
+    }
     
     /* 고급 버튼이 선택된 경우 */
-    button[data-testid="baseButton-primary"][aria-label*="_level_고급"] {{
+    button[data-testid="baseButton-primary"][aria-label*="_level_고급"] {
         background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
         border: none !important;
         color: white !important;
         font-weight: 700 !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
-    }}
+    }
     
     /* 제목 스타일 */
     h1 {
@@ -1004,7 +1015,7 @@ def main():
                     levels = ["해당없음", "입문", "초급", "중급", "고급"]
                     level_icons = ["➖", "🔰", "📚", "⚙️", "🏆"]
                     level_colors = [
-                        "#d0d0d0",  # 해당없음 - 회색
+                        "linear-gradient(135deg, #b0b0b0 0%, #d0d0d0 100%)",  # 해당없음 - 회색 그라데이션
                         "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",  # 입문 - 핑크
                         "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",  # 초급 - 블루
                         "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",  # 중급 - 그린
