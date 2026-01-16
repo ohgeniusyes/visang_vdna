@@ -8,7 +8,7 @@ import base64
 
 # 페이지 설정
 st.set_page_config(
-    page_title="IT 개발자 기술 스택 설문 | 비상교육",
+    page_title="IT개발자/데이터 전문가 기술 스택 설문 | 비상교육",
     page_icon="📋",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -674,10 +674,24 @@ def main():
     """, unsafe_allow_html=True)
     
     # 비상 브랜드 헤더
-    st.markdown("""
+    # 로고 이미지 (로컬 파일이 있으면 사용, 없으면 웹 URL 사용)
+    try:
+        logo_path = "assets/visang_logo.png"
+        import os
+        if os.path.exists(logo_path):
+            logo_html = f'<img src="{logo_path}" alt="visang" style="height: 2rem;">'
+        else:
+            # 비상교육 웹사이트 로고 또는 기본 텍스트 로고
+            logo_html = '<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>'
+    except:
+        logo_html = '<div class="visang-logo" style="font-size: 1.8rem; font-weight: 600; color: #23a6d5; letter-spacing: -0.5px;">visang</div>'
+    
+    st.markdown(f"""
     <div class="visang-header">
-        <div class="visang-logo">visang</div>
-        <div style="color: #1a1a1a; font-size: 1rem;">IT 개발자 기술 스택 설문</div>
+        <div style="display: flex; align-items: center;">
+            {logo_html}
+        </div>
+        <div style="color: #1a1a1a; font-size: 1rem; font-weight: 500;">IT개발자/데이터 전문가 기술 스택 설문</div>
     </div>
     """, unsafe_allow_html=True)
     
