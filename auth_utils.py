@@ -106,13 +106,27 @@ def signup_user(supabase: Client, email: str, password: str, name: str) -> tuple
         })
         
         if response.user:
-            # user_profiles 테이블에 추가 정보 저장
-            supabase.table("user_profiles").insert({
-                "id": response.user.id,
+            # 회원가입 직후에는 세션이 없을 수 있으므로
+            # 로그인을 먼저 수행하여 세션을 생성
+            login_response = supabase.auth.sign_in_with_password({
                 "email": email,
-            }).execute()
+                "password": password
+            })
             
-            return True, "회원가입이 완료되었습니다!"
+            if login_response.user and login_response.session:
+                # 세션이 생성된 후 프로필 생성
+                # 이제 auth.uid()가 작동합니다
+                supabase.table("user_profiles").insert({
+                    "id": login_response.user.id,
+                    "email": email,
+                    "name": name
+                }).execute()
+                
+                return True, "회원가입이 완료되었습니다!"
+            else:
+                # 로그인 실패 시에도 사용자는 생성되었으므로
+                # 나중에 로그인할 수 있도록 안내
+                return False, "회원가입은 완료되었지만 로그인에 실패했습니다. 로그인 페이지에서 다시 시도해주세요."
         else:
             return False, "회원가입에 실패했습니다."
             
