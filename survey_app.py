@@ -840,13 +840,14 @@ def show_survey_page(supabase):
                 cols = st.columns(5)
                 for idx, tech in enumerate(tech_group):
                     with cols[idx]:
+                        # 기술명 표시
                         st.markdown(f"**{tech}**")
                         
                         # 기존 숙련도 가져오기
                         existing_proficiency = existing_responses.get(tech, "해당없음") if tech in existing_responses else "해당없음"
                         proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
                         
-                        # selectbox 렌더링 (값을 먼저 가져오기 위해 - 동적 반영을 위해)
+                        # selectbox를 먼저 렌더링하여 값을 읽음 (동적 반영을 위해)
                         proficiency = st.selectbox(
                             "숙련도",
                             options=proficiency_levels,
@@ -855,9 +856,8 @@ def show_survey_page(supabase):
                             label_visibility="collapsed"
                         )
                         
-                        # 선택된 숙련도를 텍스트로 표시 (기술명 바로 아래, 드롭다운 위에 표시되도록)
-                        # Streamlit은 위에서 아래로 렌더링되므로, selectbox를 먼저 렌더링하고 값을 읽은 후
-                        # 그 값을 텍스트로 표시하되, 시각적으로는 드롭다운 위에 보이도록 함
+                        # 선택된 숙련도를 텍스트로 표시 (기술명 바로 아래, 드롭다운 위에)
+                        # selectbox 값을 읽은 후 텍스트로 표시하되, CSS로 위치를 조정
                         proficiency_color = {
                             "해당없음": "#999999",
                             "초급": "#4CAF50",
@@ -866,10 +866,10 @@ def show_survey_page(supabase):
                         }.get(proficiency, "#666666")
                         
                         # 텍스트를 기술명 바로 아래에 표시 (드롭다운은 이미 위에 렌더링됨)
-                        # 하지만 시각적으로는 드롭다운 위에 보이도록 margin 조정
+                        # CSS transform을 사용하여 드롭다운 위에 표시되도록 조정 (겹치지 않도록)
                         st.markdown(f"""
-                        <div style="margin-top: -2.5rem; margin-bottom: 2.5rem; position: relative;">
-                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0;">선택: {proficiency}</p>
+                        <div style="margin-top: -3.2rem; margin-bottom: 3.2rem; position: relative; z-index: 5;">
+                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0; padding: 0.2rem 0; line-height: 1.4;">선택: {proficiency}</p>
                         </div>
                         """, unsafe_allow_html=True)
                         
