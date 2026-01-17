@@ -998,86 +998,38 @@ def main():
                             selected_idx = levels.index(selected_level) if selected_level in levels else 0
                             selected_icon = level_icons[selected_idx]
                             
-                            # 선택된 내용 텍스트를 기술명 바로 아래에 표시 (고유 ID로 즉시 업데이트 가능하도록)
-                            status_id = f"status_{level_key}"
-                            if selected_level == "해당없음":
-                                status_text = f'<div id="{status_id}" style="margin-bottom: 0.75rem; padding: 0.4rem; text-align: center;"><span style="color: #666; font-size: 0.9rem;">선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
+                            # 드롭다운 옵션 생성 (아이콘 포함)
+                            dropdown_options = [f"{icon} {level}" for icon, level in zip(level_icons, levels)]
+                            
+                            # 현재 선택된 레벨에 해당하는 드롭다운 인덱스 찾기
+                            current_index = levels.index(selected_level) if selected_level in levels else 0
+                            
+                            # 드롭다운으로 숙련도 선택
+                            selected_option = st.selectbox(
+                                "",
+                                options=dropdown_options,
+                                index=current_index,
+                                key=f"{level_key}_selectbox",
+                                label_visibility="collapsed"
+                            )
+                            
+                            # 선택된 옵션에서 레벨 추출
+                            selected_level_from_dropdown = selected_option.split(" ", 1)[1] if " " in selected_option else selected_option
+                            
+                            # 세션 상태 업데이트
+                            if st.session_state[level_key] != selected_level_from_dropdown:
+                                st.session_state[level_key] = selected_level_from_dropdown
+                            
+                            # 선택된 내용 텍스트를 기술명 바로 아래에 표시
+                            updated_selected_level = st.session_state[level_key]
+                            updated_selected_idx = levels.index(updated_selected_level) if updated_selected_level in levels else 0
+                            updated_selected_icon = level_icons[updated_selected_idx]
+                            
+                            if updated_selected_level == "해당없음":
+                                status_text = f'<div style="margin-bottom: 0.75rem; padding: 0.4rem; text-align: center;"><span style="color: #666; font-size: 0.9rem;">선택됨: <strong>{updated_selected_icon} {updated_selected_level}</strong></span></div>'
                             else:
-                                status_text = f'<div id="{status_id}" style="margin-bottom: 0.75rem; padding: 0.4rem; text-align: center;"><span style="color: #667eea; font-size: 0.9rem;">선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
+                                status_text = f'<div style="margin-bottom: 0.75rem; padding: 0.4rem; text-align: center;"><span style="color: #667eea; font-size: 0.9rem;">선택됨: <strong>{updated_selected_icon} {updated_selected_level}</strong></span></div>'
                             st.markdown(status_text, unsafe_allow_html=True)
-                            
-                            # 버튼 클릭 시 즉시 반영을 위한 JavaScript 추가
-                            level_mapping = {level: (icon, "#666" if level == "해당없음" else "#667eea") for level, icon in zip(levels, level_icons)}
-                            js_mapping = str(level_mapping).replace("'", '"')
-                            
-                            # 5개 버튼을 세로로 배치 (아래에서 위로: 해당없음 -> 고급)
-                            # 벽돌 쌓듯이 아래가 해당없음, 위가 고급
-                            for level_idx, (level, icon, color) in enumerate(zip(levels, level_icons, level_colors)):
-                                is_selected = selected_level == level
-                                button_label = f"{icon} {level}"
-                                button_key = f"{level_key}_{level}"
-                                
-                                if st.button(
-                                    button_label,
-                                    key=button_key,
-                                    use_container_width=True,
-                                    type="primary" if is_selected else "secondary"
-                                ):
-                                    # 상태를 먼저 업데이트
-                                    st.session_state[level_key] = level
-                                    st.rerun()
-                            
-                            # 모든 버튼에 JavaScript 이벤트 리스너 추가 (즉시 반영)
-                            button_js = f"""
-                            <script>
-                            (function() {{
-                                const statusDiv = document.getElementById('{status_id}');
-                                const levelMapping = {{
-                                    "해당없음": {{icon: "➖", color: "#666"}},
-                                    "입문": {{icon: "🔰", color: "#667eea"}},
-                                    "초급": {{icon: "📚", color: "#667eea"}},
-                                    "중급": {{icon: "⚙️", color: "#667eea"}},
-                                    "고급": {{icon: "🏆", color: "#667eea"}}
-                                }};
-                                
-                                // 모든 버튼에 클릭 이벤트 추가
-                                const buttons = document.querySelectorAll('button[data-testid*="baseButton"][aria-label*="{level_key}"]');
-                                buttons.forEach(button => {{
-                                    button.addEventListener('click', function(e) {{
-                                        const buttonText = button.textContent.trim();
-                                        for (const [level, data] of Object.entries(levelMapping)) {{
-                                            if (buttonText.includes(data.icon) || buttonText.includes(level)) {{
-                                                if (statusDiv) {{
-                                                    statusDiv.innerHTML = '<span style="color: ' + data.color + '; font-size: 0.9rem;">선택됨: <strong>' + data.icon + ' ' + level + '</strong></span>';
-                                                }}
-                                                break;
-                                            }}
-                                        }}
-                                    }}, {{capture: true}});
-                                }});
-                            }})();
-                            </script>
-                            """
-                            st.markdown(button_js, unsafe_allow_html=True)
-                            
-                            # 선택된 버튼에 색상 적용 (동적 CSS - 모든 선택된 버튼을 동일한 하늘색으로)
-                            if selected_level:
-                                button_selector = f'button[data-testid="baseButton-primary"][aria-label*="{level_key}_{selected_level}"]'
-                                
-                                dynamic_css = f"""
-                                <style>
-                                {button_selector} {{
-                                    background: #87CEEB !important;
-                                    background-color: #87CEEB !important;
-                                    border: 2px solid #87CEEB !important;
-                                    color: #333 !important;
-                                    font-weight: 700 !important;
-                                    box-shadow: inset 0 5px 10px rgba(0,0,0,0.3) !important;
-                                    transform: translateY(4px) !important;
-                                }}
-                                </style>
-                                """
-                                st.markdown(dynamic_css, unsafe_allow_html=True)
                             
                             current_level = st.session_state[level_key]
                             if current_level != "해당없음":
