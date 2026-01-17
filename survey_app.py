@@ -844,10 +844,17 @@ def show_survey_page(supabase):
                         
                         # 기존 숙련도 가져오기
                         existing_proficiency = existing_responses.get(tech, "해당없음") if tech in existing_responses else "해당없음"
-                        proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
+                        
+                        # 세션 상태에서 현재 선택값 가져오기 (동적 반영을 위해)
+                        proficiency_key = f"prof_{category}_{tech}"
+                        if proficiency_key not in st.session_state:
+                            st.session_state[proficiency_key] = existing_proficiency
+                        
+                        # 현재 선택값 (세션 상태 또는 기존 값)
+                        current_proficiency = st.session_state.get(proficiency_key, existing_proficiency)
+                        proficiency_index = proficiency_levels.index(current_proficiency) if current_proficiency in proficiency_levels else 0
                         
                         # selectbox 렌더링 (값이 변경되면 자동으로 rerun되어 proficiency 변수가 업데이트됨)
-                        proficiency_key = f"prof_{category}_{tech}"
                         proficiency = st.selectbox(
                             "숙련도",
                             options=proficiency_levels,
@@ -856,8 +863,12 @@ def show_survey_page(supabase):
                             label_visibility="collapsed"
                         )
                         
-                        # 동적 표시를 위한 empty 컨테이너 (selectbox 값이 변경되면 자동으로 업데이트됨)
-                        selection_display = st.empty()
+                        # 선택값을 세션 상태에 저장 (동적 반영)
+                        # selectbox의 반환값이 변경되면 자동으로 rerun되어 업데이트됨
+                        if proficiency != st.session_state.get(proficiency_key):
+                            st.session_state[proficiency_key] = proficiency
+                        
+                        # 동적 표시: selectbox의 반환값을 직접 사용 (값이 변경되면 자동으로 rerun되어 업데이트됨)
                         proficiency_color = {
                             "해당없음": "#999999",
                             "생초보": "#FFC107",
@@ -866,8 +877,8 @@ def show_survey_page(supabase):
                             "고급": "#FF9800"
                         }.get(proficiency, "#666666")
                         
-                        # empty 컨테이너에 동적으로 업데이트되는 텍스트 표시
-                        selection_display.markdown(f"""
+                        # selectbox의 반환값(proficiency)을 직접 사용하여 동적으로 표시
+                        st.markdown(f"""
                         <div style="margin-top: 0.3rem;">
                             <p style="color: {proficiency_color}; font-size: 0.85rem; font-weight: 500; margin: 0; padding: 0;">선택: {proficiency}</p>
                         </div>
