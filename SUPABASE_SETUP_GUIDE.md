@@ -170,15 +170,20 @@ CREATE TRIGGER update_survey_responses_updated_at
 ### 3-1-1. 이메일 확인 리다이렉트 URL 설정 (중요! ⭐)
 **이메일 확인 링크를 클릭했을 때 Streamlit 앱으로 리다이렉트되도록 설정해야 합니다.**
 
-1. Supabase 대시보드에서 **"Authentication"** → **"URL Configuration"** 클릭
-2. **"Redirect URLs"** 섹션에서:
-   - **"Site URL"**: `https://visangvdna.streamlit.app` (Streamlit Cloud 앱 URL)
-   - **"Redirect URLs"**에 추가: `https://visangvdna.streamlit.app/**`
-3. **"Save"** 버튼 클릭
+1. Supabase 대시보드에서 **"Authentication"** 클릭
+2. 왼쪽 메뉴에서 **"URL Configuration"** 클릭
+3. **"Site URL"** 섹션에서:
+   - **"Site URL"** 입력란에: `https://visangvdna.streamlit.app` 입력 (Streamlit Cloud 앱 URL)
+4. **"Redirect URLs"** 섹션에서:
+   - **"Redirect URLs"** 목록에 추가: `https://visangvdna.streamlit.app/**`
+   - 또는 더 구체적으로: `https://visangvdna.streamlit.app/?page=email_verified_success`
+5. **"Save"** 버튼 클릭
 
 **⚠️ 주의:**
 - 이메일 확인 링크를 클릭하면 이 URL로 리다이렉트됩니다
 - `localhost:3000` 오류가 발생하지 않도록 반드시 설정해야 합니다
+- **"Site URL"**과 **"Redirect URLs"** 모두 설정해야 합니다
+- 설정 후 이메일 확인 링크를 클릭하면 성공 페이지가 표시됩니다
 
 ### 3-2. 이메일 템플릿 설정 (선택사항)
 1. "Authentication" → "Email Templates" 클릭

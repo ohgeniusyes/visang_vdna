@@ -259,8 +259,60 @@ def main():
     # Supabase 초기화
     supabase = init_supabase()
     
+    # URL 해시 확인 (이메일 확인 콜백 처리)
+    # JavaScript로 URL 해시를 읽어서 이메일 확인 상태 확인
+    if "url_hash_checked" not in st.session_state:
+        st.session_state.url_hash_checked = False
+    
+    if not st.session_state.url_hash_checked:
+        # JavaScript로 URL 해시 확인 및 페이지 리다이렉트
+        st.markdown("""
+        <script>
+        (function() {
+            // URL 해시 확인
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                const params = new URLSearchParams(hash.split('?')[1] || hash);
+                const error = params.get('error');
+                const type = params.get('type');
+                const access_token = params.get('access_token');
+                
+                // 이메일 확인 성공 (access_token이 있거나 type=signup이고 error가 없음)
+                if ((type === 'signup' && !error) || access_token) {
+                    // 성공 페이지로 리다이렉트 (해시 제거)
+                    const newUrl = window.location.origin + window.location.pathname + '?page=email_verified_success';
+                    window.history.replaceState({}, '', newUrl);
+                    window.location.reload();
+                } else if (error) {
+                    // 오류 페이지로 리다이렉트
+                    const errorCode = params.get('error_code') || error;
+                    const errorDesc = params.get('error_description') || '';
+                    const newUrl = window.location.origin + window.location.pathname + '?page=email_verified_error&error=' + encodeURIComponent(errorCode) + '&desc=' + encodeURIComponent(errorDesc);
+                    window.history.replaceState({}, '', newUrl);
+                    window.location.reload();
+                }
+            }
+        })();
+        </script>
+        """, unsafe_allow_html=True)
+        st.session_state.url_hash_checked = True
+    
+    # 쿼리 파라미터 확인 (리다이렉트 후)
+    query_params = st.query_params
+    if "page" in query_params:
+        if query_params["page"] == "email_verified_success":
+            st.session_state.current_page = "email_verified_success"
+        elif query_params["page"] == "email_verified_error":
+            st.session_state.current_page = "email_verified_error"
+            st.session_state.email_error = query_params.get("error", "알 수 없는 오류")
+            st.session_state.email_error_desc = query_params.get("desc", "")
+    
     # 페이지별 라우팅
-    if st.session_state.current_page == "login":
+    if st.session_state.current_page == "email_verified_success":
+        show_email_verified_success_page(supabase)
+    elif st.session_state.current_page == "email_verified_error":
+        show_email_verified_error_page(supabase)
+    elif st.session_state.current_page == "login":
         show_login_page(supabase)
     elif st.session_state.current_page == "signup":
         show_signup_page(supabase)
@@ -290,9 +342,101 @@ def apply_common_styles():
     # CSS는 각 페이지에서 필요시 적용
     pass
 
+def show_email_verified_success_page(supabase):
+    """이메일 확인 성공 페이지"""
+    apply_common_styles()
+    
+    st.markdown("""
+    <div style="text-align: center; padding: 4rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; margin: 2rem 0;">
+        <div style="font-size: 6rem; margin-bottom: 2rem;">🎉</div>
+        <h1 style="color: white; font-size: 3rem; margin-bottom: 1.5rem; font-weight: 700;">이메일 확인 완료!</h1>
+        <p style="font-size: 1.5rem; color: rgba(255,255,255,0.95); margin-bottom: 3rem; line-height: 1.8;">
+            축하합니다! 이메일이 성공적으로 확인되었습니다.<br>
+            이제 로그인하여 설문에 참여하실 수 있습니다.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style="background: #f0f4ff; padding: 2rem; border-radius: 16px; border-left: 4px solid #2661E8; margin: 2rem 0;">
+        <h3 style="color: #2661E8; margin-bottom: 1rem;">✅ 다음 단계</h3>
+        <p style="color: #1a1a1a; line-height: 1.8; font-size: 1.1rem;">
+            1. 아래 "로그인하러 가기" 버튼을 클릭하세요<br>
+            2. 회원가입 시 입력한 이메일과 비밀번호로 로그인하세요<br>
+            3. 로그인 후 설문에 참여하실 수 있습니다
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("로그인하러 가기", type="primary", use_container_width=True, key="go_to_login"):
+            st.session_state.current_page = "login"
+            st.session_state.email_verified_success = True
+            # URL 파라미터 제거
+            st.query_params.clear()
+            st.rerun()
+
+def show_email_verified_error_page(supabase):
+    """이메일 확인 오류 페이지"""
+    apply_common_styles()
+    
+    error = st.session_state.get("email_error", "알 수 없는 오류")
+    error_desc = st.session_state.get("email_error_desc", "")
+    
+    st.markdown("""
+    <div style="text-align: center; padding: 4rem 2rem; background: #fff3cd; border-radius: 20px; margin: 2rem 0; border-left: 4px solid #ffc107;">
+        <div style="font-size: 5rem; margin-bottom: 2rem;">⚠️</div>
+        <h1 style="color: #856404; font-size: 2.5rem; margin-bottom: 1.5rem; font-weight: 700;">이메일 확인 오류</h1>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.error(f"**오류**: {error}")
+    if error_desc:
+        st.info(f"**상세**: {error_desc}")
+    
+    st.markdown("""
+    <div style="background: #f0f4ff; padding: 2rem; border-radius: 16px; border-left: 4px solid #2661E8; margin: 2rem 0;">
+        <h3 style="color: #2661E8; margin-bottom: 1rem;">💡 해결 방법</h3>
+        <ul style="color: #1a1a1a; line-height: 2; font-size: 1.1rem;">
+            <li>이메일 확인 링크가 만료되었을 수 있습니다. 회원가입을 다시 시도해주세요.</li>
+            <li>이메일 확인 링크를 한 번만 사용할 수 있습니다. 이미 사용한 링크는 다시 사용할 수 없습니다.</li>
+            <li>문제가 계속되면 관리자에게 문의해주세요.</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        col_retry, col_login = st.columns(2)
+        with col_retry:
+            if st.button("회원가입 다시 시도", use_container_width=True):
+                st.session_state.current_page = "signup"
+                st.query_params.clear()
+                if "email_error" in st.session_state:
+                    del st.session_state.email_error
+                if "email_error_desc" in st.session_state:
+                    del st.session_state.email_error_desc
+                st.rerun()
+        with col_login:
+            if st.button("로그인하러 가기", type="primary", use_container_width=True):
+                st.session_state.current_page = "login"
+                st.query_params.clear()
+                if "email_error" in st.session_state:
+                    del st.session_state.email_error
+                if "email_error_desc" in st.session_state:
+                    del st.session_state.email_error_desc
+                st.rerun()
+
 def show_login_page(supabase):
     """로그인 페이지"""
     apply_common_styles()
+    
+    # 이메일 확인 성공 메시지 확인
+    if "email_verified_success" in st.session_state and st.session_state.email_verified_success:
+        st.success("✅ 이메일이 확인되었습니다! 이제 로그인할 수 있습니다.")
+        st.session_state.email_verified_success = False
+    
     st.title("🔐 로그인")
     st.markdown("---")
     
