@@ -868,22 +868,6 @@ def show_survey_page(supabase):
                         if proficiency != st.session_state.get(proficiency_key):
                             st.session_state[proficiency_key] = proficiency
                         
-                        # 동적 표시: selectbox의 반환값을 직접 사용 (값이 변경되면 자동으로 rerun되어 업데이트됨)
-                        proficiency_color = {
-                            "해당없음": "#999999",
-                            "생초보": "#FFC107",
-                            "초급": "#4CAF50",
-                            "중급": "#2196F3",
-                            "고급": "#FF9800"
-                        }.get(proficiency, "#666666")
-                        
-                        # selectbox의 반환값(proficiency)을 직접 사용하여 동적으로 표시
-                        st.markdown(f"""
-                        <div style="margin-top: 0.3rem;">
-                            <p style="color: {proficiency_color}; font-size: 0.85rem; font-weight: 500; margin: 0; padding: 0;">선택: {proficiency}</p>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
                         # 응답 저장 (각 기술을 개별 항목으로)
                         responses[tech] = proficiency
         
