@@ -838,9 +838,6 @@ def show_survey_page(supabase):
                 cols = st.columns(5)
                 for idx, tech in enumerate(tech_group):
                     with cols[idx]:
-                        # 기술명 표시
-                        st.markdown(f"**{tech}**")
-                        
                         # 기존 숙련도 가져오기
                         existing_proficiency = existing_responses.get(tech, "해당없음") if tech in existing_responses else "해당없음"
                         proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
@@ -856,21 +853,26 @@ def show_survey_page(supabase):
                             label_visibility="collapsed"
                         )
                         
-                        # 선택된 숙련도를 텍스트로 표시 (기술명 바로 아래, 드롭다운 위에)
-                        # "해당없음"일 때는 텍스트를 표시하지 않음
-                        # selectbox의 반환값을 직접 사용 (동적 반영 - 값이 변경되면 자동으로 rerun되어 업데이트됨)
-                        if proficiency != "해당없음":
+                        # 기술명과 선택값을 같은 row에 배치 (왼쪽: 기술명, 오른쪽: 선택값)
+                        col_tech_name, col_selection = st.columns([2, 1])
+                        
+                        with col_tech_name:
+                            # 기술명 표시
+                            st.markdown(f"**{tech}**")
+                        
+                        with col_selection:
+                            # 선택된 숙련도를 오른쪽에 표시 (동적 반영)
+                            # selectbox의 반환값을 직접 사용 (값이 변경되면 자동으로 rerun되어 업데이트됨)
                             proficiency_color = {
+                                "해당없음": "#999999",
                                 "초급": "#4CAF50",
                                 "중급": "#2196F3",
                                 "고급": "#FF9800"
                             }.get(proficiency, "#666666")
                             
-                            # 현재 선택된 숙련도 값만 표시 (기술명 바로 아래, 드롭다운 위에)
-                            # CSS로 위치를 조정하여 드롭다운 위에 보이도록 함 (겹치지 않도록)
                             st.markdown(f"""
-                            <div style="margin-top: -5rem; margin-bottom: 5rem; position: relative; z-index: 10;">
-                                <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0; padding: 0.3rem 0; background: white; display: block; min-height: 1.5rem; line-height: 1.5;">{proficiency}</p>
+                            <div style="text-align: right; margin-top: 0.5rem;">
+                                <p style="color: {proficiency_color}; font-size: 0.85rem; font-weight: 500; margin: 0; padding: 0;">선택: {proficiency}</p>
                             </div>
                             """, unsafe_allow_html=True)
                         
