@@ -18,236 +18,181 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Google Sheets 인증 설정 (더 이상 사용하지 않음 - Supabase로 전환)
-# SCOPE = [
-#     "https://spreadsheets.google.com/feeds",
-#     "https://www.googleapis.com/auth/drive"
-# ]
-
-# 직군별 기술 스택 정의 (표 기준)
+# 통합 기술 스택 정의 (모든 직군에 공통 적용)
+# 직군별로 나뉘어 있던 기술을 하나로 통합하여 distinct하게 구성
 TECH_STACK = {
-    "Backend 개발자": {
-        "프로그래밍 언어": ["Java", "C#", "Python", "Go", "JavaScript", "TypeScript", "C++", "PHP", "JSP", "ASP", "SQL", "Bash", "Shell Script"],
-        "프레임워크/라이브러리": ["Spring", "Spring Boot", "Thymeleaf", "JSP", "ASP.NET", ".NET", "FastAPI", "Django", "Flask", "Node.js", "Express", "Nest.js", "Koa", "Laravel", "Symfony", "CodeIgniter", "JWT", "Next.js"],
-        "아키텍처": ["MSA (마이크로서비스 아키텍처)", "EDA (이벤트 기반 아키텍처)", "RESTful API", "서버리스 아키텍처"],
-        "미들웨어/런타임": ["Apache", "nginx", "Tomcat", "IIS", "WebLogic", "WebSphere", "JBoss"],
-        "RDB": ["MySQL", "MariaDB", "PostgreSQL", "MSSQL", "Oracle", "SQLite"],
-        "NoSQL": ["MongoDB", "Redis", "DynamoDB", "Cassandra", "Elasticsearch", "OpenSearch", "Memcached"],
-        "운영체제": ["Linux", "Unix", "Windows"],
-        "클라우드": ["AWS", "Azure", "GCP", "NCP", "OCI", "On-Prem", "IDC"],
-        "컨테이너": ["Docker", "Kubernetes", "EKS (Elastic Kubernetes Service)", "AKS", "GKE"],
-        "CI/CD": ["Jenkins", "ArgoCD", "GitHub Actions", "GitLab CI", "CI/CD 파이프라인 구축 및 운영"],
-        "협업 도구": ["Jira", "Confluence", "Teams", "Slack", "Notion", "Git"],
-        "프로젝트 관리": ["에자일 (Agile)", "스크럼 (Scrum)", "프로젝트 기획", "요구사항 분석", "기획 정의서 작성", "시스템 설계", "리스크 관리", "일정 관리", "교육 시스템/콘텐츠 플랫폼 기획"],
-        "데이터/분석": ["데이터 파이프라인", "데이터 수집", "데이터 분석", "데이터 모델링", "데이터 시각화", "AI/ML 개발", "데이터 기반 의사결정"],
-        "보안": ["웹 보안 취약점 방어", "OWASP", "보안 정책 수립"],
-        "네트워크 프로토콜/Feature": ["WebSocket", "SSE", "Kafka", "RabbitMQ", "gRPC", "MQTT", "REST API", "GraphQL"]
-    },
-    "Frontend 개발자": {
-        "프로그래밍 언어": ["JavaScript", "TypeScript", "HTML", "CSS"],
-        "프레임워크/라이브러리": ["React", "Vue.js", "Vue", "Angular", "jQuery", "Next.js", "Nuxt.js", "Svelte", "Vite", "Webpack", "Babel"],
-        "웹퍼블리싱": ["반응형 웹", "웹표준", "다양한 디바이스 대응", "HTML/CSS/JavaScript 능숙"],
-        "운영체제": ["Windows", "macOS"],
-        "클라우드": ["AWS", "GCP", "NCP", "Vercel", "Netlify"],
-        "컨테이너": ["Docker (개발/배포 환경)"],
-        "CI/CD": ["Jenkins", "GitHub Actions", "GitLab CI", "프론트엔드 빌드/배포 지원"],
-        "UI/UX": ["UI 설계", "UX 설계", "스토리보드 작성", "프로토타이핑"],
-        "프로젝트 관리": ["에자일 (Agile)", "스크럼 (Scrum)", "프로젝트 기획", "요구사항 분석", "기획 정의서 작성", "교육 시스템/콘텐츠 플랫폼 기획"],
-        "네트워크 프로토콜/Feature": ["WebSocket", "REST API", "GraphQL", "WebRTC"]
-    },
-    "Full stack 개발자": {
-        "프로그래밍 언어": ["Java", "JavaScript", "TypeScript", "Python", "SQL", "HTML", "CSS"],
-        "프레임워크/라이브러리": ["Spring", "Spring Boot", "React", "Vue", "Angular", "Next.js", "Node.js", "Express"],
-        "아키텍처": ["MSA (마이크로서비스 아키텍처)", "EDA (이벤트 기반 아키텍처)", "RESTful API"],
-        "미들웨어/런타임": ["Apache", "nginx", "Tomcat"],
-        "RDB": ["MySQL", "MSSQL", "PostgreSQL", "MariaDB", "Oracle"],
-        "NoSQL": ["MongoDB", "Redis", "Elasticsearch"],
-        "운영체제": ["Linux", "Unix", "Windows", "macOS"],
-        "클라우드": ["AWS", "Azure", "GCP", "NCP"],
-        "컨테이너": ["Docker", "Kubernetes"],
-        "CI/CD": ["Jenkins", "GitHub Actions", "GitLab CI", "ArgoCD", "CI/CD 파이프라인 구축 및 운영"],
-        "협업 도구": ["Jira", "Git", "Confluence", "Teams", "Slack"],
-        "프로젝트 관리": ["에자일 (Agile)", "스크럼 (Scrum)", "프로젝트 기획", "요구사항 분석"],
-        "데이터/분석": ["AI/ML 개발", "데이터 분석"],
-        "보안": ["웹 보안 취약점 방어", "OWASP"],
-        "UI/UX": ["UI 설계", "UX 설계", "스토리보드 작성"],
-        "네트워크 프로토콜/Feature": ["WebSocket", "WebRTC", "REST API", "GraphQL", "Kafka", "RabbitMQ"]
-    },
-    "서비스 기획자": {
-        "프로그래밍 언어": ["SQL", "Python"],
-        "서비스 기획": ["플랫폼 서비스 기획", "기능 설계", "서비스 구조 설계", "추천 시스템 기획", "AI 서비스 기획", "서비스 로드맵 수립"],
-        "UI/UX": ["UI 설계", "UX 설계", "사용자 리서치", "사용성 검증", "스토리보드 작성", "프로토타이핑"],
-        "디자인 도구": ["Figma", "Framer", "Sketch", "Adobe XD"],
-        "데이터 분석": ["사용자 행동 데이터 분석", "퍼널 분석", "A/B 테스트", "트래픽 분석", "로그 분석", "데이터 수집"],
-        "데이터 시각화/분석 도구": ["Tableau", "Power BI", "GA4 (Google Analytics)", "Looker Studio", "Excel"],
-        "프로젝트 관리": ["JIRA", "Confluence", "프로젝트 관리", "협업", "문서 작성"],
-        "기술 이해": ["웹/앱서비스 이해", "백엔드 시스템 이해", "데이터 흐름 이해", "API 이해"],
-        "자격증": ["GA4", "ADsP", "DAP"]
-    },
-    "iOS 개발자": {
-        "프로그래밍 언어": ["Swift", "Objective-C"],
-        "프레임워크/라이브러리": ["UIKit", "SwiftUI", "Combine", "CoreData"],
-        "RDB": ["SQLite"],
-        "NoSQL": ["Realm", "Firebase"],
-        "운영체제": ["macOS"],
-        "클라우드": ["App Store", "CloudKit"],
-        "CI/CD": ["iOS 앱 빌드/배포 지원"],
-        "네트워크 프로토콜/Feature": ["REST API", "GraphQL", "WebSocket"]
-    },
-    "Android 개발자": {
-        "프로그래밍 언어": ["Kotlin", "Java"],
-        "프레임워크/라이브러리": ["Android SDK", "Jetpack Compose", "Room", "Retrofit"],
-        "RDB": ["SQLite"],
-        "NoSQL": ["Realm", "Firebase"],
-        "운영체제": ["Windows", "macOS", "Linux"],
-        "클라우드": ["Play Store", "Cloud Backend (AWS, Firebase, GCP)"],
-        "CI/CD": ["Android 앱 빌드/배포 지원"],
-        "네트워크 프로토콜/Feature": ["REST API", "GraphQL", "WebSocket"]
-    },
-    "크로스플랫폼 개발자": {
-        "프로그래밍 언어": ["JavaScript", "TypeScript", "Flutter", "Dart"],
-        "프레임워크/라이브러리": ["React Native", "Flutter", "Expo", "Ionic"],
-        "RDB": ["SQLite"],
-        "NoSQL": ["Firebase", "AsyncStorage"],
-        "운영체제": ["Windows", "macOS"],
-        "클라우드": ["AWS", "GCP", "Firebase"],
-        "컨테이너": ["Docker (개발 환경)"],
-        "CI/CD": ["크로스플랫폼 빌드/배포 지원"],
-        "네트워크 프로토콜/Feature": ["REST API", "GraphQL", "WebSocket"]
-    },
-    "ML 엔지니어": {
-        "프로그래밍 언어": ["Python", "SQL"],
-        "프레임워크/라이브러리": ["TensorFlow", "PyTorch", "Transformers", "LangChain", "LlamaIndex", "Scikit-learn", "OpenCV", "Keras", "NumPy", "SciPy", "Streamlit", "RDKit"],
-        "AI/ML 분야": ["자연어 처리 (NLP)", "컴퓨터 비전 (CV)", "대화형 AI (Chatbot)", "생성형 AI (Generative AI)", "LLM (Large Language Model) 활용", "예측 모델링", "분류 모델링", "최적화 모델링", "추천 시스템"],
-        "미들웨어/런타임": ["Jupyter Notebook", "MLflow", "Kubeflow", "Airflow", "Spark", "Hadoop", "Kafka", "RabbitMQ", "Ray", "Dask", "FastAPI", "Flask", "Streamlit", "Docker", "Kubernetes", "Git", "DVC"],
-        "RDB": ["PostgreSQL", "MySQL"],
-        "NoSQL": ["Vector DB (Pinecone, Weaviate, Milvus, Qdrant, Redis)", "Elasticsearch", "OpenSearch"],
-        "운영체제": ["Linux"],
-        "클라우드": ["AWS", "Azure", "GCP", "NCP", "OCI", "On-Prem"],
-        "컨테이너": ["Docker", "Kubernetes"],
-        "CI/CD": ["Jenkins", "ArgoCD", "데이터 파이프라인 구축 및 운영 (MLOps)", "MLOps 파이프라인 구축 및 운영"],
-        "모니터링/시각화/분석 도구": ["Matplotlib", "Seaborn", "Plotly"],
-        "프로젝트 관리": ["AI 프로젝트 리딩 (PL)", "모델 개발 결과 문서화", "AI/ML 서비스 설계 및 구축"],
-        "네트워크 프로토콜/Feature": ["REST API", "WebSocket", "gRPC"]
-    },
-    "Data Engineer": {
-        "프로그래밍 언어": ["Python", "Java", "SQL", "Scala"],
-        "프레임워크/라이브러리": ["Apache Spark", "Airflow", "Kafka", "Hadoop", "Flink", "Storm"],
-        "미들웨어/런타임": ["Docker", "Kubernetes", "Airflow", "Spark", "Hadoop", "Kafka"],
-        "RDB": ["MySQL", "PostgreSQL", "MSSQL", "Oracle"],
-        "NoSQL": ["MongoDB", "Cassandra", "Elasticsearch", "HBase"],
-        "운영체제": ["Linux", "Unix", "Windows"],
-        "클라우드": ["AWS", "Azure", "GCP", "NCP", "On-Prem", "IDC"],
-        "컨테이너": ["Docker", "Kubernetes"],
-        "CI/CD": ["데이터 파이프라인 구축 및 운영", "ETL 솔루션"],
-        "데이터 처리": ["정형 데이터 핸들링", "비정형 데이터 핸들링", "빅데이터 처리", "대용량 데이터 처리", "데이터 마이그레이션", "데이터 모델링"],
-        "데이터 플랫폼": ["Data Lake", "Data Warehouse", "데이터 파이프라인", "데이터 포털", "데이터 카탈로그"],
-        "모니터링/시각화/분석 도구": ["Grafana", "Prometheus", "Kibana"],
-        "네트워크 프로토콜/Feature": ["Kafka", "REST API", "gRPC"]
-    },
-    "Data Scientist": {
-        "프로그래밍 언어": ["Python", "R", "SQL"],
-        "프레임워크/라이브러리": ["pandas", "scikit-learn", "PyTorch", "TensorFlow", "Keras", "NumPy", "SciPy", "statsmodels", "XGBoost"],
-        "AI/ML 분야": ["예측 모델링", "분류 모델링", "최적화 모델링", "추천 시스템", "모델 성능 평가 및 최적화"],
-        "데이터 처리": ["데이터 전처리", "피처 엔지니어링", "데이터 가공", "빅데이터 분석 및 처리", "Hadoop", "Spark"],
-        "RDB": ["MySQL", "PostgreSQL", "BigQuery", "Snowflake"],
-        "NoSQL": ["MongoDB", "Redis", "Elasticsearch", "OpenSearch"],
-        "운영체제": ["Linux", "Windows"],
-        "클라우드": ["AWS", "GCP", "Azure", "NCP", "On-Prem", "IDC"],
-        "컨테이너": ["Docker"],
-        "CI/CD": ["머신러닝 모델 개발 및 배포 (MLOps)", "MLOps 파이프라인 구축 및 운영", "MLflow", "Kubeflow"],
-        "AI/ML 인프라": ["AI/ML 인프라 생성 및 관리", "AWS 기반 AI/ML 인프라", "클라우드 환경 모델 배포 및 운영", "분산 컴퓨팅"],
-        "모니터링/시각화/분석 도구": ["Matplotlib", "Seaborn", "Plotly", "Tableau", "Power BI", "Looker Studio", "Google Data Studio", "Excel"],
-        "협업 도구": ["Jira", "Confluence", "Teams"],
-        "네트워크 프로토콜/Feature": ["REST API"]
-    },
-    "Data Analyst": {
-        "프로그래밍 언어": ["SQL", "Python"],
-        "프레임워크/라이브러리": ["pandas", "NumPy", "Matplotlib", "Seaborn"],
-        "RDB": ["MySQL", "PostgreSQL", "BigQuery", "Snowflake", "Redshift"],
-        "NoSQL": ["MongoDB", "Cassandra", "Elasticsearch", "OpenSearch"],
-        "운영체제": ["Windows", "macOS"],
-        "클라우드": ["AWS", "GCP", "Azure", "NCP", "On-Prem", "IDC"],
-        "CI/CD": ["데이터 분석 보고서 자동화"],
-        "모니터링/시각화/분석 도구": ["Tableau", "Power BI", "Looker Studio", "Google Data Studio", "Excel"],
-        "네트워크 프로토콜/Feature": ["REST API"]
-    },
-    "People Analyst": {
-        "프로그래밍 언어": ["SQL", "Python", "R"],
-        "프레임워크/라이브러리": ["pandas", "statsmodels", "scikit-learn", "ggplot2", "dplyr"],
-        "RDB": ["Oracle", "MSSQL", "Data Warehouse"],
-        "운영체제": ["Windows", "macOS"],
-        "클라우드": ["On-Prem", "Cloud (AWS, Azure)", "NCP", "IDC"],
-        "CI/CD": ["인사 데이터 분석 및 시각화 (MLOps)"],
-        "모니터링/시각화/분석 도구": ["Tableau", "Power BI", "Looker Studio", "Google Data Studio", "Excel"],
-        "네트워크 프로토콜/Feature": ["REST API"]
-    },
-    "DevOps": {
-        "프로그래밍 언어": ["Python", "Go", "Bash", "Shell Script", "YAML", "Groovy", "PowerShell"],
-        "프레임워크/라이브러리": ["Jenkins", "GitLab Actions", "GitHub Actions", "ArgoCD", "Ansible", "CircleCI", "Travis CI", "Terraform", "Spinnaker"],
-        "미들웨어/런타임": ["Apache", "nginx", "Tomcat", "IIS", "WebLogic", "WebSphere"],
-        "RDB": ["PostgreSQL", "MySQL", "MSSQL", "Oracle"],
-        "NoSQL": ["Redis", "Elasticsearch", "OpenSearch"],
-        "운영체제": ["Linux", "Unix", "Windows"],
-        "클라우드": ["AWS", "Azure", "GCP", "NCP", "OCI", "On-Prem", "IDC"],
-        "컨테이너": ["Docker", "Kubernetes", "Rancher"],
-        "CI/CD": ["Jenkins", "ArgoCD", "GitHub Actions", "GitLab CI", "CI/CD 파이프라인 구축 및 운영"],
-        "모니터링/시각화/분석 도구": ["Grafana", "Prometheus", "ZABBIX", "Scouter", "Kibana", "CloudWatch", "Datadog", "New Relic", "Nagios"],
-        "보안/인증": ["ISMS", "CSAP", "방화벽 (F/W)", "VPN", "접근통제", "WAF", "IDS/IPS", "보안장비 운영"],
-        "가상화/인프라": ["VDI", "VMware", "Hyper-V", "KVM"],
-        "네트워크 프로토콜/Feature": ["HTTP/HTTPS", "SSH", "SCP", "SFTP", "DNS", "DHCP", "NTP", "SNMP", "VPN", "Load Balancer", "Firewall", "CDN"]
-    },
-    "MLOps": {
-        "프로그래밍 언어": ["Python", "SQL", "R", "Bash", "Shell Script"],
-        "프레임워크/라이브러리": ["MLflow", "Kubeflow", "Airflow", "DVC", "Weights & Biases", "Neptune.ai", "ClearML", "Sagemaker", "Vertex AI", "Argo Workflow"],
-        "모델 서빙": ["Triton Inference Server", "TorchServe", "vLLM", "TensorFlow Serving", "ONNX Runtime"],
-        "RDB": ["SQLite", "MySQL", "PostgreSQL"],
-        "NoSQL": ["Redis", "MongoDB", "Elasticsearch", "OpenSearch", "Feature Store (Feast, Tecton)"],
-        "운영체제": ["Linux", "Unix", "Windows"],
-        "클라우드": ["AWS", "Azure", "GCP", "NCP", "Databricks", "On-Prem"],
-        "컨테이너": ["Docker", "Kubernetes", "KubeFlow", "Helm", "Kustomize"],
-        "CI/CD": ["Jenkins", "ArgoCD", "GitOps", "Helm", "Kustomize", "ML 파이프라인 구축 및 운영", "모델 배포 자동화"],
-        "인프라/자동화": ["Terraform", "IaC (Infrastructure as Code)", "GPU 클러스터", "GPU 자원 스케줄링", "Nvidia Operator", "GPU Sharing"],
-        "모니터링/시각화/분석 도구": ["MLflow", "Kubeflow", "Databricks", "Weights & Biases", "TensorBoard", "Grafana", "Prometheus", "데이터 드리프트 탐지", "모델 성능 모니터링", "자동 재학습"],
-        "네트워크 프로토콜/Feature": ["REST API", "gRPC", "Model Serving API"]
-    },
-    "Game 개발자": {
-        "프로그래밍 언어": ["C#", "C++", "Java"],
-        "프레임워크/라이브러리": ["Unity", "Unreal Engine", "Cocos2d-x", "Godot"],
-        "RDB": ["MySQL", "MSSQL"],
-        "NoSQL": ["Redis", "Firebase"],
-        "운영체제": ["Windows"],
-        "클라우드": ["On-Prem", "Cloud (AWS, GCP)", "NCP", "Steam", "Epic Games Store", "IDC"],
-        "CI/CD": ["게임 빌드/배포 자동화"],
-        "네트워크 프로토콜/Feature": ["WebSocket", "UDP", "Photon", "Mirror"]
-    },
-    "보안 엔지니어": {
-        "프로그래밍 언어": ["Python", "C", "C++", "Java", "Go", "PowerShell", "SQL"],
-        "프레임워크/라이브러리": ["Metasploit", "Nmap", "Wireshark", "Burp Suite", "OWASP ZAP", "Nessus", "OpenVAS", "Snort", "Suricata", "Zeek", "OSSEC", "Wazuh"],
-        "RDB": ["MySQL", "PostgreSQL", "MSSQL"],
-        "NoSQL": ["Redis", "Elasticsearch", "OpenSearch"],
-        "운영체제": ["Linux", "Unix", "Windows"],
-        "클라우드": ["AWS", "Azure", "GCP", "NCP", "On-Prem", "IDC"],
-        "컨테이너": ["Docker", "Kubernetes"],
-        "CI/CD": ["보안 테스트/취약점 자동화"],
-        "모니터링/시각화/분석 도구": ["Splunk", "ELK Stack", "Grafana", "Prometheus", "SIEM", "SOAR"],
-        "보안/인증": ["ISMS", "ISMS-P", "CSAP", "ISO27001", "방화벽", "WAF", "IPS", "IDS", "침해사고 대응", "취약점 관리"],
-        "보안 표준/프레임워크": ["OWASP Top 10", "CWE", "CVE", "보안 아키텍처 설계"],
-        "네트워크 프로토콜/Feature": ["TCP/IP", "HTTP/HTTPS", "TLS/SSL", "IPSec", "VPN", "IDS/IPS", "Firewall", "WAF", "DDoS Protection", "OSI 7계층"]
-    }
+    "프로그래밍 언어": sorted(list(set([
+        "Java", "C#", "Python", "Go", "JavaScript", "TypeScript", "C++", "PHP", "JSP", "ASP", 
+        "SQL", "Bash", "Shell Script", "HTML", "CSS", "Swift", "Objective-C", "Kotlin", 
+        "Flutter", "Dart", "R", "Scala", "C", "YAML", "Groovy", "PowerShell"
+    ]))),
+    "프레임워크/라이브러리": sorted(list(set([
+        "Spring", "Spring Boot", "Thymeleaf", "JSP", "ASP.NET", ".NET", "FastAPI", "Django", 
+        "Flask", "Node.js", "Express", "Nest.js", "Koa", "Laravel", "Symfony", "CodeIgniter", 
+        "JWT", "Next.js", "React", "Vue.js", "Vue", "Angular", "jQuery", "Nuxt.js", "Svelte", 
+        "Vite", "Webpack", "Babel", "UIKit", "SwiftUI", "Combine", "CoreData", "Android SDK", 
+        "Jetpack Compose", "Room", "Retrofit", "React Native", "Flutter", "Expo", "Ionic", 
+        "TensorFlow", "PyTorch", "Transformers", "LangChain", "LlamaIndex", "Scikit-learn", 
+        "OpenCV", "Keras", "NumPy", "SciPy", "Streamlit", "RDKit", "Apache Spark", "Airflow", 
+        "Kafka", "Hadoop", "Flink", "Storm", "pandas", "statsmodels", "XGBoost", "Jenkins", 
+        "GitLab Actions", "GitHub Actions", "ArgoCD", "Ansible", "CircleCI", "Travis CI", 
+        "Terraform", "Spinnaker", "MLflow", "Kubeflow", "DVC", "Weights & Biases", "Neptune.ai", 
+        "ClearML", "Sagemaker", "Vertex AI", "Argo Workflow", "Unity", "Unreal Engine", 
+        "Cocos2d-x", "Godot", "Metasploit", "Nmap", "Wireshark", "Burp Suite", "OWASP ZAP", 
+        "Nessus", "OpenVAS", "Snort", "Suricata", "Zeek", "OSSEC", "Wazuh", "ggplot2", "dplyr"
+    ]))),
+    "아키텍처": sorted(list(set([
+        "MSA (마이크로서비스 아키텍처)", "EDA (이벤트 기반 아키텍처)", "RESTful API", "서버리스 아키텍처"
+    ]))),
+    "미들웨어/런타임": sorted(list(set([
+        "Apache", "nginx", "Tomcat", "IIS", "WebLogic", "WebSphere", "JBoss", 
+        "Jupyter Notebook", "MLflow", "Kubeflow", "Airflow", "Spark", "Hadoop", "Kafka", 
+        "RabbitMQ", "Ray", "Dask", "FastAPI", "Flask", "Streamlit", "Docker", "Kubernetes", "Git", "DVC"
+    ]))),
+    "RDB": sorted(list(set([
+        "MySQL", "MariaDB", "PostgreSQL", "MSSQL", "Oracle", "SQLite", "BigQuery", "Snowflake", "Redshift"
+    ]))),
+    "NoSQL": sorted(list(set([
+        "MongoDB", "Redis", "DynamoDB", "Cassandra", "Elasticsearch", "OpenSearch", "Memcached", 
+        "Realm", "Firebase", "AsyncStorage", "Vector DB (Pinecone, Weaviate, Milvus, Qdrant, Redis)", 
+        "HBase", "Feature Store (Feast, Tecton)"
+    ]))),
+    "운영체제": sorted(list(set([
+        "Linux", "Unix", "Windows", "macOS"
+    ]))),
+    "클라우드": sorted(list(set([
+        "AWS", "Azure", "GCP", "NCP", "OCI", "On-Prem", "IDC", "Vercel", "Netlify", 
+        "App Store", "CloudKit", "Play Store", "Cloud Backend (AWS, Firebase, GCP)", 
+        "Databricks", "Steam", "Epic Games Store"
+    ]))),
+    "컨테이너": sorted(list(set([
+        "Docker", "Kubernetes", "EKS (Elastic Kubernetes Service)", "AKS", "GKE", 
+        "Docker (개발/배포 환경)", "Docker (개발 환경)", "Rancher", "KubeFlow", "Helm", "Kustomize"
+    ]))),
+    "CI/CD": sorted(list(set([
+        "Jenkins", "ArgoCD", "GitHub Actions", "GitLab CI", "CI/CD 파이프라인 구축 및 운영", 
+        "프론트엔드 빌드/배포 지원", "iOS 앱 빌드/배포 지원", "Android 앱 빌드/배포 지원", 
+        "크로스플랫폼 빌드/배포 지원", "데이터 파이프라인 구축 및 운영 (MLOps)", 
+        "MLOps 파이프라인 구축 및 운영", "데이터 파이프라인 구축 및 운영", "ETL 솔루션", 
+        "머신러닝 모델 개발 및 배포 (MLOps)", "MLOps 파이프라인 구축 및 운영", 
+        "MLflow", "Kubeflow", "데이터 분석 보고서 자동화", "인사 데이터 분석 및 시각화 (MLOps)", 
+        "GitOps", "ML 파이프라인 구축 및 운영", "모델 배포 자동화", "게임 빌드/배포 자동화", 
+        "보안 테스트/취약점 자동화"
+    ]))),
+    "협업 도구": sorted(list(set([
+        "Jira", "Confluence", "Teams", "Slack", "Notion", "Git"
+    ]))),
+    "프로젝트 관리": sorted(list(set([
+        "에자일 (Agile)", "스크럼 (Scrum)", "프로젝트 기획", "요구사항 분석", "기획 정의서 작성", 
+        "시스템 설계", "리스크 관리", "일정 관리", "교육 시스템/콘텐츠 플랫폼 기획", 
+        "프로젝트 관리", "협업", "문서 작성", "AI 프로젝트 리딩 (PL)", "모델 개발 결과 문서화", 
+        "AI/ML 서비스 설계 및 구축"
+    ]))),
+    "데이터/분석": sorted(list(set([
+        "데이터 파이프라인", "데이터 수집", "데이터 분석", "데이터 모델링", "데이터 시각화", 
+        "AI/ML 개발", "데이터 기반 의사결정", "사용자 행동 데이터 분석", "퍼널 분석", 
+        "A/B 테스트", "트래픽 분석", "로그 분석", "정형 데이터 핸들링", "비정형 데이터 핸들링", 
+        "빅데이터 처리", "대용량 데이터 처리", "데이터 마이그레이션", "데이터 전처리", 
+        "피처 엔지니어링", "데이터 가공", "빅데이터 분석 및 처리"
+    ]))),
+    "데이터 플랫폼": sorted(list(set([
+        "Data Lake", "Data Warehouse", "데이터 파이프라인", "데이터 포털", "데이터 카탈로그"
+    ]))),
+    "AI/ML 분야": sorted(list(set([
+        "자연어 처리 (NLP)", "컴퓨터 비전 (CV)", "대화형 AI (Chatbot)", "생성형 AI (Generative AI)", 
+        "LLM (Large Language Model) 활용", "예측 모델링", "분류 모델링", "최적화 모델링", 
+        "추천 시스템", "모델 성능 평가 및 최적화"
+    ]))),
+    "AI/ML 인프라": sorted(list(set([
+        "AI/ML 인프라 생성 및 관리", "AWS 기반 AI/ML 인프라", "클라우드 환경 모델 배포 및 운영", "분산 컴퓨팅"
+    ]))),
+    "모델 서빙": sorted(list(set([
+        "Triton Inference Server", "TorchServe", "vLLM", "TensorFlow Serving", "ONNX Runtime"
+    ]))),
+    "인프라/자동화": sorted(list(set([
+        "Terraform", "IaC (Infrastructure as Code)", "GPU 클러스터", "GPU 자원 스케줄링", 
+        "Nvidia Operator", "GPU Sharing"
+    ]))),
+    "보안": sorted(list(set([
+        "웹 보안 취약점 방어", "OWASP", "보안 정책 수립"
+    ]))),
+    "보안/인증": sorted(list(set([
+        "ISMS", "CSAP", "방화벽 (F/W)", "VPN", "접근통제", "WAF", "IDS/IPS", "보안장비 운영", 
+        "ISMS-P", "ISO27001", "방화벽", "침해사고 대응", "취약점 관리"
+    ]))),
+    "보안 표준/프레임워크": sorted(list(set([
+        "OWASP Top 10", "CWE", "CVE", "보안 아키텍처 설계"
+    ]))),
+    "가상화/인프라": sorted(list(set([
+        "VDI", "VMware", "Hyper-V", "KVM"
+    ]))),
+    "네트워크 프로토콜/Feature": sorted(list(set([
+        "WebSocket", "SSE", "Kafka", "RabbitMQ", "gRPC", "MQTT", "REST API", "GraphQL", 
+        "WebRTC", "UDP", "Photon", "Mirror", "Model Serving API", "TCP/IP", "HTTP/HTTPS", 
+        "TLS/SSL", "IPSec", "VPN", "IDS/IPS", "Firewall", "WAF", "DDoS Protection", "OSI 7계층", 
+        "SSH", "SCP", "SFTP", "DNS", "DHCP", "NTP", "SNMP", "Load Balancer", "CDN"
+    ]))),
+    "웹퍼블리싱": sorted(list(set([
+        "반응형 웹", "웹표준", "다양한 디바이스 대응", "HTML/CSS/JavaScript 능숙"
+    ]))),
+    "UI/UX": sorted(list(set([
+        "UI 설계", "UX 설계", "스토리보드 작성", "프로토타이핑", "사용자 리서치", "사용성 검증"
+    ]))),
+    "디자인 도구": sorted(list(set([
+        "Figma", "Framer", "Sketch", "Adobe XD", "Illustrator", "Photoshop", "InDesign", "Zeplin"
+    ]))),
+    "서비스 기획": sorted(list(set([
+        "플랫폼 서비스 기획", "기능 설계", "서비스 구조 설계", "추천 시스템 기획", 
+        "AI 서비스 기획", "서비스 로드맵 수립"
+    ]))),
+    "데이터 시각화/분석 도구": sorted(list(set([
+        "Tableau", "Power BI", "GA4 (Google Analytics)", "Looker Studio", "Excel", 
+        "Google Data Studio", "Matplotlib", "Seaborn", "Plotly"
+    ]))),
+    "모니터링/시각화/분석 도구": sorted(list(set([
+        "Grafana", "Prometheus", "ZABBIX", "Scouter", "Kibana", "CloudWatch", "Datadog", 
+        "New Relic", "Nagios", "Splunk", "ELK Stack", "SIEM", "SOAR", "TensorBoard"
+    ]))),
+    "기술 이해": sorted(list(set([
+        "웹/앱서비스 이해", "백엔드 시스템 이해", "데이터 흐름 이해", "API 이해"
+    ]))),
+    "자격증": sorted(list(set([
+        "GA4", "ADsP", "DAP"
+    ]))),
+    "편집 디자인": sorted(list(set([
+        "교과서 디자인", "교재 디자인", "타이포그래피", "편집 디자인"
+    ]))),
+    "프로모션/마케팅 디자인": sorted(list(set([
+        "디지털 마케팅 콘텐츠 디자인", "프로모션 디자인", "GUI 디자인", "인터랙션 디자인", 
+        "반응형 웹 디자인", "모바일 앱 디자인"
+    ])))
 }
 
-# 직군 목록 (기타 옵션 추가)
-JOB_ROLES = list(TECH_STACK.keys()) + ["기타"]
-
-# Google Sheets 함수들 (더 이상 사용하지 않음 - Supabase로 전환)
-# def init_google_sheets(credentials_dict, spreadsheet_id):
-#     """Google Sheets 초기화"""
-#     pass
-# 
-# def save_to_sheets(sheet, data):
-#     """Google Sheets에 데이터 저장"""
-#     pass
+# 직군 목록 (확장된 목록)
+JOB_ROLES = [
+    "Backend 개발자",
+    "Frontend 개발자",
+    "Full stack 개발자",
+    "서비스 기획자",
+    "웹/앱 서비스기획자",
+    "iOS 개발자",
+    "Android 개발자",
+    "크로스플랫폼 개발자",
+    "ML 엔지니어",
+    "Data Engineer",
+    "Data Scientist",
+    "Data Analyst",
+    "People Analyst",
+    "DevOps",
+    "MLOps",
+    "Game 개발자",
+    "보안 엔지니어",
+    "교육콘텐츠 개발자",
+    "퍼블리셔",
+    "웹/앱 디자이너",
+    "교과서/교재 편집 디자이너",
+    "기타"
+]
 
 def main():
     # 페이지 라우팅: 세션 상태로 현재 페이지 관리
@@ -724,7 +669,7 @@ def show_survey_page(supabase):
     st.markdown("---")
     
     # 직군 선택 (폼 밖에서 처리 - 라디오 버튼 방식)
-    st.markdown("### 직군 선택 *")
+    st.markdown("### 1. 직군 선택 *")
     existing_job_role = existing_response_data.get("job_role", "") if has_existing_response and existing_response_data else ""
     
     # 기존 응답에서 "기타"인 경우 확인
@@ -804,20 +749,10 @@ def show_survey_page(supabase):
     
     # 설문 폼
     with st.form("survey_form", clear_on_submit=False):
-        st.markdown("### 기술 스택 및 숙련도")
+        st.markdown("### 2. 기술 스택 및 숙련도")
         
-        # 직군이 선택되지 않았으면 안내 메시지 표시
-        if not job_role or job_role == "":
-            st.warning("⚠️ 먼저 직군을 선택해주세요.")
-            tech_stack = {}
-        else:
-            # 선택된 직군의 기술 스택 가져오기
-            if job_role == "기타":
-                tech_stack = {}
-                if other_job_role:
-                    st.info(f"💡 '{other_job_role}' 직군에 대한 기술 스택은 아직 정의되지 않았습니다.")
-            else:
-                tech_stack = TECH_STACK.get(job_role, {})
+        # 직군 선택과 관계없이 항상 통합된 기술 스택 표시
+        tech_stack = TECH_STACK
         
         # 숙련도 옵션 (5개로 변경)
         proficiency_levels = ["해당없음", "생초보", "초급", "중급", "고급"]
