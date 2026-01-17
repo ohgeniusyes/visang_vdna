@@ -517,53 +517,23 @@ def main():
         box-shadow: inset 0 5px 10px rgba(0,0,0,0.5) !important;
     }
     
-    /* 해당없음 버튼이 선택된 경우 (기본값) - 피아노 건반처럼 안쪽으로 들어간 상태 유지 */
-    button[data-testid="baseButton-primary"][aria-label*="_level_해당없음"] {
-        background: linear-gradient(135deg, #b0b0b0 0%, #d0d0d0 100%) !important;
-        border: 2px solid #999 !important;
+    /* 선택된 버튼 색상 적용 - 모든 선택된 버튼을 동일한 하늘색으로 */
+    button[data-testid="baseButton-primary"] {
+        position: relative !important;
+    }
+    
+    /* 모든 선택된 버튼 (해당없음, 입문, 초급, 중급, 고급 모두 동일한 하늘색) */
+    button[data-testid="baseButton-primary"][aria-label*="해당없음"],
+    button[data-testid="baseButton-primary"][aria-label*="입문"],
+    button[data-testid="baseButton-primary"][aria-label*="초급"],
+    button[data-testid="baseButton-primary"][aria-label*="중급"],
+    button[data-testid="baseButton-primary"][aria-label*="고급"] {
+        background: #87CEEB !important;
+        background-color: #87CEEB !important;
+        border: 2px solid #87CEEB !important;
         color: #333 !important;
         font-weight: 700 !important;
-        box-shadow: inset 0 5px 10px rgba(0,0,0,0.4) !important;
-        transform: translateY(4px) !important;
-    }
-    
-    /* 입문 버튼이 선택된 경우 - 피아노 건반처럼 안쪽으로 들어간 상태 유지 */
-    button[data-testid="baseButton-primary"][aria-label*="_level_입문"] {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-        border: none !important;
-        color: white !important;
-        font-weight: 700 !important;
-        box-shadow: inset 0 5px 10px rgba(0,0,0,0.5) !important;
-        transform: translateY(4px) !important;
-    }
-    
-    /* 초급 버튼이 선택된 경우 - 피아노 건반처럼 안쪽으로 들어간 상태 유지 */
-    button[data-testid="baseButton-primary"][aria-label*="_level_초급"] {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
-        border: none !important;
-        color: white !important;
-        font-weight: 700 !important;
-        box-shadow: inset 0 5px 10px rgba(0,0,0,0.5) !important;
-        transform: translateY(4px) !important;
-    }
-    
-    /* 중급 버튼이 선택된 경우 - 피아노 건반처럼 안쪽으로 들어간 상태 유지 */
-    button[data-testid="baseButton-primary"][aria-label*="_level_중급"] {
-        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
-        border: none !important;
-        color: white !important;
-        font-weight: 700 !important;
-        box-shadow: inset 0 5px 10px rgba(0,0,0,0.5) !important;
-        transform: translateY(4px) !important;
-    }
-    
-    /* 고급 버튼이 선택된 경우 - 피아노 건반처럼 안쪽으로 들어간 상태 유지 */
-    button[data-testid="baseButton-primary"][aria-label*="_level_고급"] {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
-        border: none !important;
-        color: white !important;
-        font-weight: 700 !important;
-        box-shadow: inset 0 5px 10px rgba(0,0,0,0.5) !important;
+        box-shadow: inset 0 5px 10px rgba(0,0,0,0.3) !important;
         transform: translateY(4px) !important;
     }
     
@@ -1049,6 +1019,25 @@ def main():
                                 ):
                                     st.session_state[level_key] = level
                                     st.rerun()
+                            
+                            # 선택된 버튼에 색상 적용 (동적 CSS - 모든 선택된 버튼을 동일한 하늘색으로)
+                            if selected_level:
+                                button_selector = f'button[data-testid="baseButton-primary"][aria-label*="{level_key}_{selected_level}"]'
+                                
+                                dynamic_css = f"""
+                                <style>
+                                {button_selector} {{
+                                    background: #87CEEB !important;
+                                    background-color: #87CEEB !important;
+                                    border: 2px solid #87CEEB !important;
+                                    color: #333 !important;
+                                    font-weight: 700 !important;
+                                    box-shadow: inset 0 5px 10px rgba(0,0,0,0.3) !important;
+                                    transform: translateY(4px) !important;
+                                }}
+                                </style>
+                                """
+                                st.markdown(dynamic_css, unsafe_allow_html=True)
                             
                             current_level = st.session_state[level_key]
                             if current_level != "해당없음":
