@@ -846,6 +846,7 @@ def show_survey_page(supabase):
                         proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
                         
                         # selectbox를 먼저 렌더링하여 값을 읽음 (동적 반영을 위해)
+                        # Streamlit은 위에서 아래로 렌더링되므로 selectbox를 먼저 렌더링해야 값을 읽을 수 있음
                         proficiency_key = f"prof_{category}_{tech}"
                         proficiency = st.selectbox(
                             "숙련도",
@@ -856,7 +857,7 @@ def show_survey_page(supabase):
                         )
                         
                         # 선택된 숙련도를 텍스트로 표시 (기술명 바로 아래, 드롭다운 위에)
-                        # selectbox의 반환값을 직접 사용 (동적 반영 - 값이 변경되면 자동으로 업데이트됨)
+                        # selectbox의 반환값을 직접 사용 (동적 반영 - 값이 변경되면 자동으로 rerun되어 업데이트됨)
                         proficiency_color = {
                             "해당없음": "#999999",
                             "초급": "#4CAF50",
@@ -865,10 +866,11 @@ def show_survey_page(supabase):
                         }.get(proficiency, "#666666")
                         
                         # 텍스트를 기술명 바로 아래에 표시 (드롭다운은 이미 위에 렌더링됨)
-                        # CSS로 위치를 조정하여 드롭다운 위에 보이도록 함 (겹치지 않도록 margin 증가)
+                        # CSS로 위치를 조정하여 드롭다운 위에 보이도록 함 (겹치지 않도록)
+                        # 드롭다운을 더 밑으로 내리기 위해 margin을 더 크게 조정
                         st.markdown(f"""
-                        <div style="margin-top: -4rem; margin-bottom: 4rem; position: relative; z-index: 10;">
-                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0; padding: 0.3rem 0; background: white; display: block; min-height: 1.5rem;">선택: {proficiency}</p>
+                        <div style="margin-top: -5rem; margin-bottom: 5rem; position: relative; z-index: 10;">
+                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0; padding: 0.3rem 0; background: white; display: block; min-height: 1.5rem; line-height: 1.5;">선택: {proficiency}</p>
                         </div>
                         """, unsafe_allow_html=True)
                         
