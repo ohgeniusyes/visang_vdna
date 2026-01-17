@@ -322,18 +322,10 @@ def main():
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* 전체 배경 - 그라데이션 애니메이션 */
+    /* 전체 배경 - 깔끔한 흰색 */
     .stApp {
-        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-        background-size: 400% 400%;
-        animation: gradient 15s ease infinite;
+        background: #ffffff;
         background-attachment: fixed;
-    }
-    
-    @keyframes gradient {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
     }
     
     /* 흐르는 텍스트 애니메이션 */
@@ -402,9 +394,9 @@ def main():
     
     /* 히어로 섹션 */
     .hero-section {
-        background: transparent;
-        padding: 8rem 4rem 6rem 4rem;
-        min-height: 50vh;
+        background: #ffffff;
+        padding: 4rem 4rem 3rem 4rem;
+        min-height: auto;
         display: flex;
         align-items: center;
         position: relative;
@@ -417,37 +409,33 @@ def main():
     }
     
     .hero-text {
-        color: white;
-        font-size: 4rem;
-        font-weight: 800;
-        line-height: 1.2;
-        margin-bottom: 2.5rem;
-        letter-spacing: -2px;
-        text-shadow: 2px 4px 8px rgba(0,0,0,0.3);
+        color: #1a1a1a;
+        font-size: 3.5rem;
+        font-weight: 700;
+        line-height: 1.3;
+        margin-bottom: 1.5rem;
+        letter-spacing: -1.5px;
     }
     
     .hero-subtext {
-        color: rgba(255, 255, 255, 0.98);
-        font-size: 1.9rem;
-        font-weight: 500;
+        color: #666;
+        font-size: 1.5rem;
+        font-weight: 400;
         line-height: 1.8;
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
         letter-spacing: -0.3px;
-        text-shadow: 1px 2px 4px rgba(0,0,0,0.2);
     }
     
-    /* 설문 컨테이너 - 흰색 카드 */
+    /* 설문 컨테이너 - 깔끔한 흰색 */
     .survey-container {
-        background: rgba(255, 255, 255, 0.98);
-        backdrop-filter: blur(10px);
-        border-radius: 32px;
-        padding: 4rem 5rem;
-        margin: 2rem auto 4rem auto;
+        background: #ffffff;
+        border-radius: 0;
+        padding: 3rem 5rem;
+        margin: 0 auto;
         max-width: 1200px;
-        box-shadow: 0 32px 80px rgba(0,0,0,0.2);
         position: relative;
         z-index: 10;
-        border: 1px solid rgba(255,255,255,0.3);
+        border: none;
     }
     
     /* 기술 수준 버튼 스타일 */
@@ -524,15 +512,9 @@ def main():
         box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
     }
     
-    /* 해당없음 버튼 텍스트 포함 선택자 (더 넓은 범위) */
+    /* 모든 primary 버튼 중 해당없음 텍스트를 포함하는 버튼 */
     button[data-testid="baseButton-primary"] {
         position: relative;
-    }
-    
-    button[data-testid="baseButton-primary"]:has(> div:has-text("해당없음")) {
-        background: linear-gradient(135deg, #b0b0b0 0%, #d0d0d0 100%) !important;
-        border: 2px solid #999 !important;
-        color: #333 !important;
     }
     
     /* 입문 버튼이 선택된 경우 */
