@@ -686,13 +686,13 @@ def show_survey_page(supabase):
     
     # V-DNA 브랜딩 이미지 표시 (파이리 캐릭터)
     try:
-        # 이미지 파일 표시 (Streamlit Cloud에서도 작동하도록)
         # 사용자가 제공한 V-DNA 브랜딩 이미지 (파이리 캐릭터 포함)
-        st.image("vdna_banner.png", use_container_width=True)
+        # 이미지 크기 조정 (너무 크지 않도록)
+        st.image("vdna_banner.png", use_container_width=True, output_format="PNG")
     except Exception as e:
-        # vdna_banner.png가 없으면 visang_logo.png 시도
+        # vdna_banner.png가 없으면 visang_logo.png 시도 (크기 조정)
         try:
-            st.image("visang_logo.png", use_container_width=True)
+            st.image("visang_logo.png", width=800, output_format="PNG")
         except:
             # 이미지가 없거나 로드 실패 시 HTML로 대체 이미지 영역 표시
             st.markdown("""
@@ -737,69 +737,71 @@ def show_survey_page(supabase):
     
     st.markdown("---")
     
+    # 직군 선택 (폼 밖에서 처리 - 라디오 버튼 방식)
+    st.markdown("### 직군 선택 *")
+    existing_job_role = existing_response_data.get("job_role", "") if has_existing_response and existing_response_data else ""
+    
+    # 기존 응답에서 "기타"인 경우 확인
+    other_job_role = None
+    if existing_job_role and existing_job_role not in JOB_ROLES:
+        other_job_role = existing_job_role
+        existing_job_role = "기타"
+    
+    # 직군을 5개씩 그룹으로 나누기
+    job_roles_without_other = [r for r in JOB_ROLES if r != "기타"]
+    job_roles_groups = [job_roles_without_other[i:i+5] for i in range(0, len(job_roles_without_other), 5)]
+    
+    # 세션 상태로 선택된 직군 관리
+    if "selected_job_role" not in st.session_state:
+        st.session_state.selected_job_role = existing_job_role if existing_job_role else ""
+    
+    # 각 그룹별로 버튼 표시 (폼 밖)
+    for group in job_roles_groups:
+        cols = st.columns(5)
+        for idx, role in enumerate(group):
+            with cols[idx]:
+                button_type = "primary" if st.session_state.selected_job_role == role else "secondary"
+                if st.button(
+                    role,
+                    key=f"job_role_btn_{role}",
+                    use_container_width=True,
+                    type=button_type
+                ):
+                    st.session_state.selected_job_role = role
+                    st.rerun()
+    
+    # "기타" 옵션
+    cols_other = st.columns(5)
+    with cols_other[0]:
+        button_type_other = "primary" if st.session_state.selected_job_role == "기타" else "secondary"
+        if st.button(
+            "기타",
+            key="job_role_btn_기타",
+            use_container_width=True,
+            type=button_type_other
+        ):
+            st.session_state.selected_job_role = "기타"
+            st.rerun()
+    
+    job_role = st.session_state.selected_job_role
+    
+    # 선택된 직군 표시
+    if job_role:
+        if job_role == "기타":
+            st.markdown(f"**선택된 직군**: {other_job_role if other_job_role else '기타 (입력 필요)'}")
+        else:
+            st.markdown(f"**선택된 직군**: {job_role}")
+    
+    # "기타" 옵션 입력 (폼 밖)
+    if job_role == "기타":
+        other_job_role = st.text_input("직군을 입력해주세요 *", placeholder="예: QA 엔지니어", value=other_job_role if other_job_role else "", key="other_job_role_input")
+    
+    st.markdown("---")
+    
     # 설문 폼
     with st.form("survey_form", clear_on_submit=False):
         # 이름 입력
         name = st.text_input("이름 *", placeholder="홍길동", value=existing_response_data.get("name", "") if has_existing_response and existing_response_data else "")
-        
-        # 직군 선택 (버튼으로 5개씩 표시)
-        st.markdown("### 직군 선택 *")
-        existing_job_role = existing_response_data.get("job_role", "") if has_existing_response and existing_response_data else ""
-        
-        # 기존 응답에서 "기타"인 경우 확인
-        other_job_role = None
-        if existing_job_role and existing_job_role not in JOB_ROLES:
-            other_job_role = existing_job_role
-            existing_job_role = "기타"
-        
-        # 직군을 5개씩 그룹으로 나누기
-        job_roles_without_other = [r for r in JOB_ROLES if r != "기타"]
-        job_roles_groups = [job_roles_without_other[i:i+5] for i in range(0, len(job_roles_without_other), 5)]
-        
-        # 세션 상태로 선택된 직군 관리
-        if "selected_job_role" not in st.session_state:
-            st.session_state.selected_job_role = existing_job_role if existing_job_role else ""
-        
-        # 각 그룹별로 버튼 표시
-        for group in job_roles_groups:
-            cols = st.columns(5)
-            for idx, role in enumerate(group):
-                with cols[idx]:
-                    button_type = "primary" if st.session_state.selected_job_role == role else "secondary"
-                    if st.button(
-                        role,
-                        key=f"job_role_btn_{role}",
-                        use_container_width=True,
-                        type=button_type
-                    ):
-                        st.session_state.selected_job_role = role
-                        st.rerun()
-        
-        # "기타" 옵션
-        cols_other = st.columns(5)
-        with cols_other[0]:
-            button_type_other = "primary" if st.session_state.selected_job_role == "기타" else "secondary"
-            if st.button(
-                "기타",
-                key="job_role_btn_기타",
-                use_container_width=True,
-                type=button_type_other
-            ):
-                st.session_state.selected_job_role = "기타"
-                st.rerun()
-        
-        job_role = st.session_state.selected_job_role
-        
-        # 선택된 직군 표시
-        if job_role:
-            if job_role == "기타":
-                st.markdown(f"**선택된 직군**: {other_job_role if other_job_role else '기타 (입력 필요)'}")
-            else:
-                st.markdown(f"**선택된 직군**: {job_role}")
-        
-        # "기타" 옵션 입력
-        if job_role == "기타":
-            other_job_role = st.text_input("직군을 입력해주세요 *", placeholder="예: QA 엔지니어", value=other_job_role if other_job_role else "")
         
         st.markdown("---")
         st.markdown("### 기술 스택 및 숙련도")
