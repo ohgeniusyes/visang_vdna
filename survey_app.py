@@ -695,67 +695,130 @@ def show_survey_page(supabase):
     
     st.markdown("---")
     
+    # 숙련도 설명
+    st.markdown("### 📌 숙련도 안내")
+    st.markdown("""
+    <div style="background: #f0f4ff; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #2661E8; margin: 1rem 0;">
+        <h4 style="color: #2661E8; margin-bottom: 1rem;">숙련도 기준</h4>
+        <ul style="color: #1a1a1a; line-height: 2; font-size: 1rem;">
+            <li><strong>해당없음</strong>: 해당 기술을 사용하지 않거나 경험이 없음 (기본값)</li>
+            <li><strong>초급</strong>: 기본적인 사용법을 알고 있으며, 간단한 작업을 수행할 수 있음</li>
+            <li><strong>중급</strong>: 일반적인 업무를 독립적으로 수행할 수 있으며, 문제 해결 능력이 있음</li>
+            <li><strong>고급</strong>: 복잡한 문제를 해결할 수 있으며, 다른 사람을 가르치거나 아키텍처 설계가 가능함</li>
+        </ul>
+        <p style="color: #666; margin-top: 1rem; font-size: 0.95rem;">
+            💡 <strong>참고:</strong> "해당없음"이 기본값이므로, 해당 기술을 사용하지 않거나 경험이 없다면 별도로 선택하지 않아도 됩니다.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
     # 설문 폼
     with st.form("survey_form", clear_on_submit=False):
         # 이름 입력
         name = st.text_input("이름 *", placeholder="홍길동", value=existing_response_data.get("name", "") if has_existing_response and existing_response_data else "")
         
-        # 직군 선택
-        existing_job_role = existing_response_data.get("job_role", JOB_ROLES[0]) if has_existing_response and existing_response_data else JOB_ROLES[0]
-        job_role_index = JOB_ROLES.index(existing_job_role) if existing_job_role in JOB_ROLES else 0
-        job_role = st.selectbox(
-            "직군 선택 *",
-            options=JOB_ROLES,
-            index=job_role_index
-        )
+        # 직군 선택 (버튼으로 5개씩 표시)
+        st.markdown("### 직군 선택 *")
+        existing_job_role = existing_response_data.get("job_role", "") if has_existing_response and existing_response_data else ""
         
-        # "기타" 옵션 추가
+        # 기존 응답에서 "기타"인 경우 확인
         other_job_role = None
+        if existing_job_role and existing_job_role not in JOB_ROLES:
+            other_job_role = existing_job_role
+            existing_job_role = "기타"
+        
+        # 직군을 5개씩 그룹으로 나누기
+        job_roles_without_other = [r for r in JOB_ROLES if r != "기타"]
+        job_roles_groups = [job_roles_without_other[i:i+5] for i in range(0, len(job_roles_without_other), 5)]
+        
+        # 세션 상태로 선택된 직군 관리
+        if "selected_job_role" not in st.session_state:
+            st.session_state.selected_job_role = existing_job_role if existing_job_role else ""
+        
+        # 각 그룹별로 버튼 표시
+        for group in job_roles_groups:
+            cols = st.columns(5)
+            for idx, role in enumerate(group):
+                with cols[idx]:
+                    button_type = "primary" if st.session_state.selected_job_role == role else "secondary"
+                    if st.button(
+                        role,
+                        key=f"job_role_btn_{role}",
+                        use_container_width=True,
+                        type=button_type
+                    ):
+                        st.session_state.selected_job_role = role
+                        st.rerun()
+        
+        # "기타" 옵션
+        cols_other = st.columns(5)
+        with cols_other[0]:
+            button_type_other = "primary" if st.session_state.selected_job_role == "기타" else "secondary"
+            if st.button(
+                "기타",
+                key="job_role_btn_기타",
+                use_container_width=True,
+                type=button_type_other
+            ):
+                st.session_state.selected_job_role = "기타"
+                st.rerun()
+        
+        job_role = st.session_state.selected_job_role
+        
+        # 선택된 직군 표시
+        if job_role:
+            if job_role == "기타":
+                st.markdown(f"**선택된 직군**: {other_job_role if other_job_role else '기타 (입력 필요)'}")
+            else:
+                st.markdown(f"**선택된 직군**: {job_role}")
+        
+        # "기타" 옵션 입력
         if job_role == "기타":
-            other_job_role = st.text_input("직군을 입력해주세요", placeholder="예: QA 엔지니어")
+            other_job_role = st.text_input("직군을 입력해주세요 *", placeholder="예: QA 엔지니어", value=other_job_role if other_job_role else "")
         
         st.markdown("---")
         st.markdown("### 기술 스택 및 숙련도")
-        st.markdown("각 기술에 대한 숙련도를 선택해주세요.")
         
         # 선택된 직군의 기술 스택 가져오기
-        tech_stack = TECH_STACK.get(job_role, {})
+        tech_stack = TECH_STACK.get(job_role, {}) if job_role != "기타" else {}
         
-        # 숙련도 옵션
-        proficiency_levels = ["해당없음", "입문", "초급", "중급", "고급"]
+        # 숙련도 옵션 (4개로 변경)
+        proficiency_levels = ["해당없음", "초급", "중급", "고급"]
         
-        # 응답 데이터 구조
+        # 응답 데이터 구조 (각 기술을 개별 항목으로 저장)
         responses = {}
         
-        # 각 카테고리별로 기술 선택 및 숙련도 입력
+        # 각 카테고리별로 기술 표시
         for category, technologies in tech_stack.items():
             st.markdown(f"#### {category}")
             
-            # 기술 선택 (멀티셀렉트)
+            # 기존 응답 불러오기
             existing_responses = existing_response_data.get("responses", {}) if has_existing_response and existing_response_data else {}
-            existing_techs_for_category = list(existing_responses.get(category, {}).keys()) if category in existing_responses else []
-            selected_techs = st.multiselect(
-                f"{category} 기술 선택",
-                options=technologies,
-                default=existing_techs_for_category,
-                key=f"tech_{category}"
-            )
             
-            # 선택된 기술별 숙련도 입력
-            if selected_techs:
-                for tech in selected_techs:
-                    existing_proficiency = existing_responses.get(category, {}).get(tech, "해당없음") if category in existing_responses and tech in existing_responses.get(category, {}) else "해당없음"
-                    proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
-                    proficiency = st.selectbox(
-                        f"{tech} 숙련도",
-                        options=proficiency_levels,
-                        index=proficiency_index,
-                        key=f"prof_{category}_{tech}"
-                    )
-                    
-                    if category not in responses:
-                        responses[category] = {}
-                    responses[category][tech] = proficiency
+            # 기술을 4개씩 그룹으로 나누기
+            tech_groups = [technologies[i:i+4] for i in range(0, len(technologies), 4)]
+            
+            for tech_group in tech_groups:
+                cols = st.columns(4)
+                for idx, tech in enumerate(tech_group):
+                    with cols[idx]:
+                        st.markdown(f"**{tech}**")
+                        # 기존 숙련도 가져오기
+                        existing_proficiency = existing_responses.get(tech, "해당없음") if tech in existing_responses else "해당없음"
+                        proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
+                        
+                        proficiency = st.selectbox(
+                            "숙련도",
+                            options=proficiency_levels,
+                            index=proficiency_index,
+                            key=f"prof_{category}_{tech}",
+                            label_visibility="collapsed"
+                        )
+                        
+                        # 응답 저장 (각 기술을 개별 항목으로)
+                        responses[tech] = proficiency
         
         st.markdown("---")
         
@@ -768,6 +831,8 @@ def show_survey_page(supabase):
             # 유효성 검사
             if not name or not name.strip():
                 st.error("이름을 입력해주세요.")
+            elif not job_role:
+                st.error("직군을 선택해주세요.")
             elif job_role == "기타" and (not other_job_role or not other_job_role.strip()):
                 st.error("직군을 입력해주세요.")
             else:
@@ -776,11 +841,12 @@ def show_survey_page(supabase):
                 
                 # Supabase에 저장
                 try:
+                    # responses는 각 기술을 개별 항목으로 저장 (기술명: 숙련도)
                     response_data = {
                         "user_id": user_id,
                         "name": name.strip(),
                         "job_role": final_job_role,
-                        "responses": responses
+                        "responses": responses  # {"기술명": "숙련도"} 형태
                     }
                     
                     if has_existing_response and existing_response_data:
@@ -792,6 +858,10 @@ def show_survey_page(supabase):
                         # 새 응답 생성
                         supabase.table("survey_responses").insert(response_data).execute()
                         st.success("✅ 설문이 제출되었습니다! 감사합니다.")
+                    
+                    # 세션 상태 초기화
+                    if "selected_job_role" in st.session_state:
+                        del st.session_state.selected_job_role
                     
                     st.rerun()
                 except Exception as e:
