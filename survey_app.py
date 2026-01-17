@@ -12,7 +12,7 @@ from auth_utils import (
 
 # 페이지 설정
 st.set_page_config(
-    page_title="IT개발자/데이터 전문가 기술 스택 설문 | 비상교육",
+    page_title="전사 CP 역량 세분화 설문 | 비상교육",
     page_icon="📋",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -759,7 +759,9 @@ def show_survey_page(supabase):
             </div>
             """, unsafe_allow_html=True)
     
-    st.title("📋 IT 개발자/데이터 전문가 기술 스택 설문")
+    st.markdown("""
+    <h1 style="font-size: 2rem; margin-bottom: 1rem;">📋 전사 CP 역량 세분화 설문</h1>
+    """, unsafe_allow_html=True)
     st.markdown("---")
     
     # 사용자 정보 표시
