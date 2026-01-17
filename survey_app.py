@@ -997,59 +997,64 @@ def main():
                 
                 # 각 기술에 대해 5단계 선택 (버튼 형태)
                 category_data = {}
-                for tech in options:
-                    # 기술명을 더 크게 표시
-                    st.markdown(f"<div style='margin-bottom: 1.5rem;'><strong style='font-size: 1.6rem; color: #1a1a1a; font-weight: 700;'>{tech}</strong></div>", unsafe_allow_html=True)
+                
+                # 기술명을 5개씩 행으로 배치
+                levels = ["해당없음", "입문", "초급", "중급", "고급"]  # 아래에서 위로 (벽돌 쌓듯)
+                level_icons = ["➖", "🔰", "📚", "⚙️", "🏆"]
+                level_colors = [
+                    "linear-gradient(135deg, #b0b0b0 0%, #d0d0d0 100%)",  # 해당없음 - 회색 그라데이션
+                    "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",  # 입문 - 핑크
+                    "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",  # 초급 - 블루
+                    "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",  # 중급 - 그린
+                    "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"   # 고급 - 핑크-옐로우
+                ]
+                
+                # 기술을 5개씩 묶어서 행으로 표시
+                for row_start in range(0, len(options), 5):
+                    row_techs = options[row_start:row_start + 5]
+                    tech_cols = st.columns(5)
                     
-                    # 세션 상태에서 현재 선택된 레벨 가져오기
-                    level_key = f"{selected_role}_{category}_{tech}_level"
-                    if level_key not in st.session_state:
-                        st.session_state[level_key] = "해당없음"  # 기본값
-                    
-                    # 5개 버튼을 옆으로 나열
-                    cols = st.columns(5)
-                    levels = ["해당없음", "입문", "초급", "중급", "고급"]
-                    level_icons = ["➖", "🔰", "📚", "⚙️", "🏆"]
-                    level_colors = [
-                        "linear-gradient(135deg, #b0b0b0 0%, #d0d0d0 100%)",  # 해당없음 - 회색 그라데이션
-                        "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",  # 입문 - 핑크
-                        "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",  # 초급 - 블루
-                        "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",  # 중급 - 그린
-                        "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"   # 고급 - 핑크-옐로우
-                    ]
-                    
-                    selected_level = st.session_state[level_key]
-                    selected_idx = levels.index(selected_level) if selected_level in levels else 0
-                    selected_color = level_colors[selected_idx]
-                    
-                    # 버튼 렌더링
-                    for idx, (level, icon, color) in enumerate(zip(levels, level_icons, level_colors)):
-                        with cols[idx]:
-                            is_selected = selected_level == level
-                            button_label = f"{icon} {level}"
+                    for col_idx, tech in enumerate(row_techs):
+                        with tech_cols[col_idx]:
+                            # 기술명 표시
+                            st.markdown(f"<div style='margin-bottom: 0.5rem; text-align: center;'><strong style='font-size: 1.1rem; color: #1a1a1a; font-weight: 700;'>{tech}</strong></div>", unsafe_allow_html=True)
                             
-                            if st.button(
-                                button_label,
-                                key=f"{level_key}_{level}",
-                                use_container_width=True,
-                                type="primary" if is_selected else "secondary"
-                            ):
-                                st.session_state[level_key] = level
-                                st.rerun()
+                            # 세션 상태에서 현재 선택된 레벨 가져오기
+                            level_key = f"{selected_role}_{category}_{tech}_level"
+                            if level_key not in st.session_state:
+                                st.session_state[level_key] = "해당없음"  # 기본값
+                            
+                            selected_level = st.session_state[level_key]
+                            selected_idx = levels.index(selected_level) if selected_level in levels else 0
+                            
+                            # 5개 버튼을 세로로 배치 (아래에서 위로: 해당없음 -> 고급)
+                            # 벽돌 쌓듯이 아래가 해당없음, 위가 고급
+                            for level_idx, (level, icon, color) in enumerate(zip(levels, level_icons, level_colors)):
+                                is_selected = selected_level == level
+                                button_label = f"{icon} {level}"
+                                
+                                if st.button(
+                                    button_label,
+                                    key=f"{level_key}_{level}",
+                                    use_container_width=True,
+                                    type="primary" if is_selected else "secondary"
+                                ):
+                                    st.session_state[level_key] = level
+                                    st.rerun()
+                            
+                            # 선택된 내용 텍스트로 표시
+                            selected_icon = level_icons[selected_idx]
+                            if selected_level == "해당없음":
+                                status_text = f'<div style="margin-top: 0.5rem; padding: 0.5rem; background: #f5f5f5; border-radius: 6px; text-align: center;"><span style="color: #666; font-size: 0.85rem;"><strong>{selected_icon} {selected_level}</strong></span></div>'
+                            else:
+                                status_text = f'<div style="margin-top: 0.5rem; padding: 0.5rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 6px; text-align: center;"><span style="color: #667eea; font-size: 0.85rem;"><strong>✓ {selected_icon} {selected_level}</strong></span></div>'
+                            st.markdown(status_text, unsafe_allow_html=True)
+                            
+                            current_level = st.session_state[level_key]
+                            if current_level != "해당없음":
+                                category_data[tech] = current_level
                     
-                    # 선택된 내용 텍스트로 표시
-                    selected_icon = level_icons[selected_idx]
-                    if selected_level == "해당없음":
-                        status_text = f'<div style="margin-top: 0.75rem; padding: 0.75rem 1rem; background: #f5f5f5; border-radius: 8px; border-left: 4px solid #999;"><span style="color: #666; font-size: 0.95rem;">선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
-                    else:
-                        status_text = f'<div style="margin-top: 0.75rem; padding: 0.75rem 1rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 8px; border-left: 4px solid #667eea;"><span style="color: #667eea; font-size: 0.95rem;">✓ 선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
-                    st.markdown(status_text, unsafe_allow_html=True)
-                    
-                    current_level = st.session_state[level_key]
-                    if current_level != "해당없음":
-                        category_data[tech] = current_level
-                    
-                    st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
+                    st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
                 
                 if category_data:
                     form_data[category] = category_data
