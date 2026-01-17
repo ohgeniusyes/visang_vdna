@@ -100,33 +100,41 @@ def signup_user(supabase: Client, email: str, password: str, name: str) -> tuple
     
     try:
         # Supabase Auth로 사용자 생성
+        # 이메일 확인이 활성화되어 있으면 확인 이메일이 전송됩니다
+        # name을 user_metadata에 저장하여 나중에 프로필 생성 시 사용
         response = supabase.auth.sign_up({
             "email": email,
             "password": password,
+            "options": {
+                "data": {
+                    "name": name  # user_metadata에 저장
+                }
+            }
         })
         
         if response.user:
-            # 회원가입 직후에는 세션이 없을 수 있으므로
-            # 로그인을 먼저 수행하여 세션을 생성
-            login_response = supabase.auth.sign_in_with_password({
-                "email": email,
-                "password": password
-            })
-            
-            if login_response.user and login_response.session:
-                # 세션이 생성된 후 프로필 생성
-                # 이제 auth.uid()가 작동합니다
-                supabase.table("user_profiles").insert({
-                    "id": login_response.user.id,
-                    "email": email,
-                    "name": name
-                }).execute()
-                
-                return True, "회원가입이 완료되었습니다!"
+            # 이메일 확인이 필요한 경우와 필요 없는 경우를 구분
+            # response.user.email_confirmed_at이 None이면 이메일 확인이 필요함
+            if response.user.email_confirmed_at:
+                # 이메일이 이미 확인된 경우 (확인 비활성화된 경우)
+                # 바로 프로필 생성
+                try:
+                    supabase.table("user_profiles").insert({
+                        "id": response.user.id,
+                        "email": email,
+                        "name": name
+                    }).execute()
+                    return True, "회원가입이 완료되었습니다!"
+                except Exception as profile_error:
+                    error_str = str(profile_error)
+                    if "row-level security" in error_str.lower() or "42501" in error_str:
+                        return False, "프로필 생성 오류: Supabase에서 RLS_FIX.sql을 실행해주세요."
+                    return False, f"프로필 생성 오류: {error_str}"
             else:
-                # 로그인 실패 시에도 사용자는 생성되었으므로
-                # 나중에 로그인할 수 있도록 안내
-                return False, "회원가입은 완료되었지만 로그인에 실패했습니다. 로그인 페이지에서 다시 시도해주세요."
+                # 이메일 확인이 필요한 경우
+                # 프로필은 이메일 확인 후 자동으로 생성되도록 데이터베이스 트리거 사용
+                # name은 user_metadata에 저장되어 있으므로 트리거에서 읽을 수 있음
+                return False, "회원가입이 완료되었습니다. 📧 이메일을 확인하여 계정을 활성화해주세요. 이메일 확인 후 로그인할 수 있습니다."
         else:
             return False, "회원가입에 실패했습니다."
             
