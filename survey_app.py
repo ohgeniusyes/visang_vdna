@@ -788,10 +788,11 @@ def show_survey_page(supabase):
     <div style="background: #f0f4ff; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #2661E8; margin: 1rem 0;">
         <h4 style="color: #2661E8; margin-bottom: 1rem;">숙련도 기준</h4>
         <ul style="color: #1a1a1a; line-height: 2; font-size: 1rem;">
-            <li><strong>해당없음</strong>: 해당 기술을 사용하지 않거나 경험이 없음 (기본값)</li>
+            <li><strong>해당없음</strong>: 해당 기술을 사용하지 않거나 경험이 없음</li>
+            <li><strong>생초보</strong>: 사용 경험은 있으나 실무에 독립적으로 활용하기 어려움</li>
             <li><strong>초급</strong>: 기본적인 사용법을 알고 있으며, 간단한 작업을 수행할 수 있음</li>
             <li><strong>중급</strong>: 일반적인 업무를 독립적으로 수행할 수 있으며, 문제 해결 능력이 있음</li>
-            <li><strong>고급</strong>: 복잡한 문제를 해결할 수 있으며, 다른 사람을 가르치거나 아키텍처 설계가 가능함</li>
+            <li><strong>고급</strong>: 복잡한 문제 해결 및 아키텍처 설계, 타인 교육 가능</li>
         </ul>
         <p style="color: #666; margin-top: 1rem; font-size: 0.95rem;">
             💡 <strong>참고:</strong> "해당없음"이 기본값이므로, 해당 기술을 사용하지 않거나 경험이 없다면 별도로 선택하지 않아도 됩니다.
@@ -818,8 +819,8 @@ def show_survey_page(supabase):
             else:
                 tech_stack = TECH_STACK.get(job_role, {})
         
-        # 숙련도 옵션 (4개로 변경)
-        proficiency_levels = ["해당없음", "초급", "중급", "고급"]
+        # 숙련도 옵션 (5개로 변경)
+        proficiency_levels = ["해당없음", "생초보", "초급", "중급", "고급"]
         
         # 응답 데이터 구조 (각 기술을 개별 항목으로 저장)
         responses = {}
@@ -845,7 +846,7 @@ def show_survey_page(supabase):
                         existing_proficiency = existing_responses.get(tech, "해당없음") if tech in existing_responses else "해당없음"
                         proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
                         
-                        # selectbox 렌더링
+                        # selectbox 렌더링 (값이 변경되면 자동으로 rerun되어 proficiency 변수가 업데이트됨)
                         proficiency_key = f"prof_{category}_{tech}"
                         proficiency = st.selectbox(
                             "숙련도",
@@ -854,6 +855,23 @@ def show_survey_page(supabase):
                             key=proficiency_key,
                             label_visibility="collapsed"
                         )
+                        
+                        # 동적 표시를 위한 empty 컨테이너 (selectbox 값이 변경되면 자동으로 업데이트됨)
+                        selection_display = st.empty()
+                        proficiency_color = {
+                            "해당없음": "#999999",
+                            "생초보": "#FFC107",
+                            "초급": "#4CAF50",
+                            "중급": "#2196F3",
+                            "고급": "#FF9800"
+                        }.get(proficiency, "#666666")
+                        
+                        # empty 컨테이너에 동적으로 업데이트되는 텍스트 표시
+                        selection_display.markdown(f"""
+                        <div style="margin-top: 0.3rem;">
+                            <p style="color: {proficiency_color}; font-size: 0.85rem; font-weight: 500; margin: 0; padding: 0;">선택: {proficiency}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
                         
                         # 응답 저장 (각 기술을 개별 항목으로)
                         responses[tech] = proficiency
