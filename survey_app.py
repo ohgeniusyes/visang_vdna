@@ -259,46 +259,10 @@ def main():
     # Supabase 초기화
     supabase = init_supabase()
     
-    # URL 해시 확인 (이메일 확인 콜백 처리)
-    # JavaScript로 URL 해시를 읽어서 이메일 확인 상태 확인
-    if "url_hash_checked" not in st.session_state:
-        st.session_state.url_hash_checked = False
-    
-    if not st.session_state.url_hash_checked:
-        # JavaScript로 URL 해시 확인 및 페이지 리다이렉트
-        st.markdown("""
-        <script>
-        (function() {
-            // URL 해시 확인
-            if (window.location.hash) {
-                const hash = window.location.hash.substring(1);
-                const params = new URLSearchParams(hash.split('?')[1] || hash);
-                const error = params.get('error');
-                const type = params.get('type');
-                const access_token = params.get('access_token');
-                
-                // 이메일 확인 성공 (access_token이 있거나 type=signup이고 error가 없음)
-                if ((type === 'signup' && !error) || access_token) {
-                    // 성공 페이지로 리다이렉트 (해시 제거)
-                    const newUrl = window.location.origin + window.location.pathname + '?page=email_verified_success';
-                    window.history.replaceState({}, '', newUrl);
-                    window.location.reload();
-                } else if (error) {
-                    // 오류 페이지로 리다이렉트
-                    const errorCode = params.get('error_code') || error;
-                    const errorDesc = params.get('error_description') || '';
-                    const newUrl = window.location.origin + window.location.pathname + '?page=email_verified_error&error=' + encodeURIComponent(errorCode) + '&desc=' + encodeURIComponent(errorDesc);
-                    window.history.replaceState({}, '', newUrl);
-                    window.location.reload();
-                }
-            }
-        })();
-        </script>
-        """, unsafe_allow_html=True)
-        st.session_state.url_hash_checked = True
-    
-    # 쿼리 파라미터 확인 (리다이렉트 후)
+    # URL 해시 및 쿼리 파라미터 확인 (이메일 확인 콜백 처리)
     query_params = st.query_params
+    
+    # 1. 쿼리 파라미터로 직접 접근한 경우 (리다이렉트 후)
     if "page" in query_params:
         if query_params["page"] == "email_verified_success":
             st.session_state.current_page = "email_verified_success"
@@ -306,6 +270,57 @@ def main():
             st.session_state.current_page = "email_verified_error"
             st.session_state.email_error = query_params.get("error", "알 수 없는 오류")
             st.session_state.email_error_desc = query_params.get("desc", "")
+    
+    # 2. URL 해시 확인 (이메일 확인 링크 클릭 시)
+    # JavaScript로 URL 해시를 읽어서 이메일 확인 상태 확인
+    if "url_hash_checked" not in st.session_state:
+        st.session_state.url_hash_checked = False
+    
+    if not st.session_state.url_hash_checked:
+        # JavaScript로 URL 해시 확인 및 페이지 리다이렉트
+        # Streamlit은 페이지 로드 시 한 번만 실행되므로 즉시 실행되도록 수정
+        st.markdown("""
+        <script>
+        (function() {
+            // URL 해시 확인
+            const hash = window.location.hash;
+            if (hash && hash.length > 1) {
+                const hashContent = hash.substring(1);
+                let params = {};
+                
+                // 해시 파싱 (형식: #access_token=xxx&type=signup 또는 #error=xxx)
+                if (hashContent.includes('=')) {
+                    hashContent.split('&').forEach(function(item) {
+                        const parts = item.split('=');
+                        if (parts.length === 2) {
+                            params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1]);
+                        }
+                    });
+                }
+                
+                const error = params.error;
+                const type = params.type;
+                const access_token = params.access_token;
+                
+                // 이메일 확인 성공 (access_token이 있거나 type=signup이고 error가 없음)
+                if ((type === 'signup' && !error) || access_token) {
+                    // 성공 페이지로 리다이렉트 (해시 제거)
+                    const baseUrl = window.location.origin + window.location.pathname;
+                    const newUrl = baseUrl + '?page=email_verified_success';
+                    window.location.href = newUrl;
+                } else if (error) {
+                    // 오류 페이지로 리다이렉트
+                    const errorCode = params.error_code || error;
+                    const errorDesc = params.error_description || '';
+                    const baseUrl = window.location.origin + window.location.pathname;
+                    const newUrl = baseUrl + '?page=email_verified_error&error=' + encodeURIComponent(errorCode) + '&desc=' + encodeURIComponent(errorDesc);
+                    window.location.href = newUrl;
+                }
+            }
+        })();
+        </script>
+        """, unsafe_allow_html=True)
+        st.session_state.url_hash_checked = True
     
     # 페이지별 라우팅
     if st.session_state.current_page == "email_verified_success":

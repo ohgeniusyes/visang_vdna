@@ -251,6 +251,10 @@ def login_user(supabase: Client, email: str, password: str) -> tuple[bool, str, 
         })
         
         if response.user:
+            # 이메일 확인 여부 확인
+            if not response.user.email_confirmed_at:
+                return False, "이메일 확인이 완료되지 않았습니다. 이메일의 확인 링크를 클릭해주세요.", {}
+            
             # 세션 정보 저장
             user_data = {
                 "id": response.user.id,
@@ -264,7 +268,9 @@ def login_user(supabase: Client, email: str, password: str) -> tuple[bool, str, 
             
     except Exception as e:
         error_msg = str(e)
-        if "invalid" in error_msg.lower() or "wrong" in error_msg.lower():
+        if "email not confirmed" in error_msg.lower():
+            return False, "이메일 확인이 완료되지 않았습니다. 이메일의 확인 링크를 클릭해주세요.", {}
+        if "invalid" in error_msg.lower() or "wrong" in error_msg.lower() or "invalid login" in error_msg.lower():
             return False, "이메일 또는 비밀번호가 올바르지 않습니다.", {}
         return False, f"로그인 오류: {error_msg}", {}
 
@@ -304,27 +310,34 @@ def delete_user_account(supabase: Client, user_id: str) -> tuple[bool, str]:
         # Admin 클라이언트 생성 (service_role key 사용)
         admin_supabase = init_supabase_admin()
         if not admin_supabase:
-            return False, "회원 탈퇴에 필요한 권한이 없습니다. SERVICE_ROLE_KEY를 확인해주세요."
+            return False, "회원 탈퇴에 필요한 권한이 없습니다. SERVICE_ROLE_KEY를 Streamlit Secrets에 추가해주세요."
         
-        # 1. user_profiles 삭제 (CASCADE로 survey_responses도 자동 삭제)
+        # 1. Supabase Auth에서 사용자 삭제 (service_role key 필요) - 먼저 삭제
+        # auth.users를 먼저 삭제하면 CASCADE로 user_profiles도 자동 삭제됨
+        try:
+            response = admin_supabase.auth.admin.delete_user(user_id, should_soft_delete=False)
+            # 응답 확인
+            if hasattr(response, 'user') and response.user is None:
+                # 삭제 성공
+                pass
+        except Exception as e:
+            error_msg = str(e)
+            # 사용자가 이미 삭제되었거나 없는 경우는 무시
+            if "not found" not in error_msg.lower() and "does not exist" not in error_msg.lower() and "404" not in error_msg:
+                # 실제 오류인 경우
+                return False, f"사용자 삭제 오류: {error_msg}"
+        
+        # 2. user_profiles 삭제 (혹시 남아있을 경우를 대비)
         try:
             supabase.table("user_profiles").delete().eq("id", user_id).execute()
         except Exception as e:
-            # 프로필이 없을 수도 있으므로 경고만
+            # 프로필이 없을 수도 있으므로 경고만 (CASCADE로 이미 삭제되었을 수 있음)
             pass
-        
-        # 2. Supabase Auth에서 사용자 삭제 (service_role key 필요)
-        try:
-            admin_supabase.auth.admin.delete_user(user_id)
-        except Exception as e:
-            # 사용자가 이미 삭제되었거나 없는 경우
-            error_msg = str(e)
-            if "not found" not in error_msg.lower() and "does not exist" not in error_msg.lower():
-                return False, f"사용자 삭제 오류: {error_msg}"
         
         return True, "회원 탈퇴가 완료되었습니다. 모든 데이터가 삭제되었습니다."
     except Exception as e:
-        return False, f"회원 탈퇴 오류: {str(e)}"
+        error_msg = str(e)
+        return False, f"회원 탈퇴 오류: {error_msg}"
 
 def is_admin(email: str) -> bool:
     """관리자 여부 확인"""
