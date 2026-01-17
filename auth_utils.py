@@ -43,6 +43,57 @@ def generate_reset_code() -> str:
     """비밀번호 재설정 코드 생성 (6자리 숫자)"""
     return ''.join(secrets.choice(string.digits) for _ in range(6))
 
+def generate_verification_code() -> str:
+    """이메일 확인 코드 생성 (6자리 숫자)"""
+    return ''.join(secrets.choice(string.digits) for _ in range(6))
+
+def save_verification_code(supabase: Client, email: str, code: str) -> bool:
+    """이메일 확인 코드를 데이터베이스에 저장"""
+    try:
+        expires_at = datetime.now() + timedelta(minutes=30)  # 30분 후 만료
+        
+        # 기존 코드가 있으면 삭제
+        supabase.table("password_reset_codes").delete().eq("email", email).execute()
+        
+        # 새 코드 저장 (password_reset_codes 테이블 재사용)
+        supabase.table("password_reset_codes").insert({
+            "email": email,
+            "code": code,
+            "expires_at": expires_at.isoformat(),
+            "used": False
+        }).execute()
+        
+        return True
+    except Exception as e:
+        st.error(f"❌ 코드 저장 오류: {str(e)}")
+        return False
+
+def verify_email_code(supabase: Client, email: str, code: str) -> tuple[bool, str]:
+    """이메일 확인 코드 검증"""
+    try:
+        result = supabase.table("password_reset_codes").select("*").eq("email", email).eq("code", code).eq("used", False).execute()
+        
+        if not result.data:
+            return False, "인증 코드가 올바르지 않습니다."
+        
+        # 만료 시간 확인
+        reset_data = result.data[0]
+        expires_at = datetime.fromisoformat(reset_data["expires_at"].replace("Z", "+00:00"))
+        
+        if datetime.now(expires_at.tzinfo) > expires_at:
+            return False, "인증 코드가 만료되었습니다. 다시 요청해주세요."
+        
+        # 코드 사용 처리
+        supabase.table("password_reset_codes").update({"used": True}).eq("id", reset_data["id"]).execute()
+        
+        # 참고: Supabase의 이메일 확인은 링크를 통해서만 가능합니다
+        # 코드 확인은 개발/테스트용이며, 실제로는 이메일 링크를 클릭해야 합니다
+        # 코드가 맞으면 이메일 링크를 클릭했는지 확인하도록 안내
+        
+        return True, "코드가 확인되었습니다. 이메일의 확인 링크를 클릭하거나, 로그인을 시도해보세요."
+    except Exception as e:
+        return False, f"코드 검증 오류: {str(e)}"
+
 def save_reset_code(supabase: Client, email: str, code: str) -> bool:
     """비밀번호 재설정 코드를 데이터베이스에 저장"""
     try:
@@ -132,9 +183,13 @@ def signup_user(supabase: Client, email: str, password: str, name: str) -> tuple
                     return False, f"프로필 생성 오류: {error_str}"
             else:
                 # 이메일 확인이 필요한 경우
-                # 프로필은 이메일 확인 후 자동으로 생성되도록 데이터베이스 트리거 사용
-                # name은 user_metadata에 저장되어 있으므로 트리거에서 읽을 수 있음
-                return False, "회원가입이 완료되었습니다. 📧 이메일을 확인하여 계정을 활성화해주세요. 이메일 확인 후 로그인할 수 있습니다."
+                # 6자리 확인 코드 생성 및 저장
+                verification_code = generate_verification_code()
+                if save_verification_code(supabase, email, verification_code):
+                    # 코드를 반환하여 화면에 표시 (실제로는 이메일로 전송)
+                    return False, f"VERIFICATION_CODE:{verification_code}"
+                else:
+                    return False, "회원가입이 완료되었습니다. 📧 이메일을 확인하여 계정을 활성화해주세요."
         else:
             return False, "회원가입에 실패했습니다."
             

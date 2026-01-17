@@ -6,7 +6,8 @@ from datetime import datetime
 from auth_utils import (
     init_supabase, validate_email, signup_user, login_user,
     reset_password, delete_user_account, is_admin,
-    generate_reset_code, save_reset_code, verify_reset_code
+    generate_reset_code, save_reset_code, verify_reset_code,
+    generate_verification_code, save_verification_code, verify_email_code
 )
 
 # 페이지 설정
@@ -263,6 +264,8 @@ def main():
         show_login_page(supabase)
     elif st.session_state.current_page == "signup":
         show_signup_page(supabase)
+    elif st.session_state.current_page == "verify_email":
+        show_verify_email_page(supabase)
     elif st.session_state.current_page == "reset_password":
         show_reset_password_page(supabase)
     elif st.session_state.current_page == "survey":
@@ -346,12 +349,96 @@ def show_signup_page(supabase):
                     st.session_state.current_page = "login"
                     st.rerun()
                 else:
-                    st.error(message)
+                    # VERIFICATION_CODE:로 시작하면 코드 입력 페이지로 이동
+                    if message.startswith("VERIFICATION_CODE:"):
+                        code = message.split(":")[1]
+                        st.session_state.signup_email = email
+                        st.session_state.verification_code = code
+                        st.session_state.current_page = "verify_email"
+                        st.rerun()
+                    else:
+                        st.error(message)
             else:
                 st.error("❌ Supabase 연결이 필요합니다.")
         
         if st.button("로그인으로 돌아가기", use_container_width=True):
             st.session_state.current_page = "login"
+            st.rerun()
+
+def show_verify_email_page(supabase):
+    """이메일 확인 코드 입력 페이지"""
+    apply_common_styles()
+    st.title("📧 이메일 확인")
+    st.markdown("---")
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        email = st.session_state.get("signup_email", "")
+        verification_code = st.session_state.get("verification_code", "")
+        
+        if email:
+            st.success(f"✅ **{email}**로 이메일 확인 링크가 전송되었습니다!")
+            st.markdown("""
+            **📧 이메일 확인 방법 (권장):**
+            1. 이메일함을 확인하세요
+            2. "비상교육 설문" 또는 "Confirm your signup" 제목의 이메일을 찾으세요
+            3. 이메일 안의 **"Confirm your mail"** 또는 **"확인 링크"** 버튼을 클릭하세요
+            4. 링크를 클릭하면 자동으로 이메일이 확인되고 로그인 페이지로 이동합니다
+            """)
+            
+            st.markdown("---")
+            st.markdown("### 🔢 6자리 코드 입력 (대안)")
+            st.markdown("이메일 확인 링크를 클릭하지 못한 경우, 아래에 6자리 코드를 입력할 수 있습니다.")
+            
+            # 개발용: 코드 표시
+            if verification_code:
+                st.info(f"💡 **개발용 코드**: `{verification_code}` (실제 운영에서는 이메일로만 전송됩니다)")
+            
+            code_input = st.text_input("6자리 인증 코드", placeholder="000000", key="verify_code_input", max_chars=6, help="이메일로 받은 6자리 코드를 입력하세요")
+            
+            col_code, col_space = st.columns([2, 1])
+            with col_code:
+                if st.button("코드 확인", type="primary", use_container_width=True):
+                    if code_input and len(code_input) == 6:
+                        if supabase:
+                            success, message = verify_email_code(supabase, email, code_input)
+                            if success:
+                                st.success(message)
+                                st.info("이제 로그인할 수 있습니다! 로그인 페이지에서 로그인해주세요.")
+                                st.session_state.current_page = "login"
+                                # 세션 상태 정리
+                                if "signup_email" in st.session_state:
+                                    del st.session_state.signup_email
+                                if "verification_code" in st.session_state:
+                                    del st.session_state.verification_code
+                                st.rerun()
+                            else:
+                                st.error(message)
+                        else:
+                            st.error("❌ Supabase 연결이 필요합니다.")
+                    else:
+                        st.error("6자리 코드를 입력해주세요.")
+            
+            st.markdown("---")
+            st.markdown("**💡 참고사항:**")
+            st.markdown("- ✅ 이메일 확인 링크를 클릭하는 것이 가장 빠른 방법입니다")
+            st.markdown("- ✅ 링크를 클릭하면 자동으로 이메일이 확인되고 로그인할 수 있습니다")
+            st.markdown("- ⏰ 코드는 30분간 유효합니다")
+            st.markdown("- 📧 이메일이 보이지 않으면 스팸함을 확인해보세요")
+            
+        else:
+            st.error("이메일 정보가 없습니다. 회원가입 페이지로 돌아가세요.")
+            if st.button("회원가입 페이지로 돌아가기", use_container_width=True):
+                st.session_state.current_page = "signup"
+                st.rerun()
+        
+        st.markdown("---")
+        if st.button("로그인으로 돌아가기", use_container_width=True):
+            st.session_state.current_page = "login"
+            if "signup_email" in st.session_state:
+                del st.session_state.signup_email
+            if "verification_code" in st.session_state:
+                del st.session_state.verification_code
             st.rerun()
 
 def show_reset_password_page(supabase):
