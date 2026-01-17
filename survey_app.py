@@ -696,8 +696,8 @@ def show_survey_page(supabase):
     
     with col_banner:
         try:
-            # vdna_banner.png 메인 배너로 배치
-            st.image("vdna_banner.png", use_container_width=True, output_format="PNG")
+            # vdna_banner.png 메인 배너로 배치 (사이즈 조정)
+            st.image("vdna_banner.png", width=600, output_format="PNG")
         except:
             # 이미지가 없거나 로드 실패 시 HTML로 대체 이미지 영역 표시
             st.markdown("""
@@ -865,12 +865,11 @@ def show_survey_page(supabase):
                             "고급": "#FF9800"
                         }.get(proficiency, "#666666")
                         
-                        # 텍스트를 기술명 바로 아래에 표시 (드롭다운은 이미 위에 렌더링됨)
+                        # 현재 선택된 숙련도 값만 표시 (기술명 바로 아래, 드롭다운 위에)
                         # CSS로 위치를 조정하여 드롭다운 위에 보이도록 함 (겹치지 않도록)
-                        # 드롭다운을 더 밑으로 내리기 위해 margin을 더 크게 조정
                         st.markdown(f"""
                         <div style="margin-top: -5rem; margin-bottom: 5rem; position: relative; z-index: 10;">
-                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0; padding: 0.3rem 0; background: white; display: block; min-height: 1.5rem; line-height: 1.5;">선택: {proficiency}</p>
+                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0; padding: 0.3rem 0; background: white; display: block; min-height: 1.5rem; line-height: 1.5;">{proficiency}</p>
                         </div>
                         """, unsafe_allow_html=True)
                         
