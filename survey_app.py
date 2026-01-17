@@ -805,14 +805,20 @@ def show_survey_page(supabase):
     
     # 설문 폼
     with st.form("survey_form", clear_on_submit=False):
-        # 이름 입력
-        name = st.text_input("이름 *", placeholder="홍길동", value=existing_response_data.get("name", "") if has_existing_response and existing_response_data else "")
-        
-        st.markdown("---")
         st.markdown("### 기술 스택 및 숙련도")
         
-        # 선택된 직군의 기술 스택 가져오기
-        tech_stack = TECH_STACK.get(job_role, {}) if job_role != "기타" else {}
+        # 직군이 선택되지 않았으면 안내 메시지 표시
+        if not job_role or job_role == "":
+            st.warning("⚠️ 먼저 직군을 선택해주세요.")
+            tech_stack = {}
+        else:
+            # 선택된 직군의 기술 스택 가져오기
+            if job_role == "기타":
+                tech_stack = {}
+                if other_job_role:
+                    st.info(f"💡 '{other_job_role}' 직군에 대한 기술 스택은 아직 정의되지 않았습니다.")
+            else:
+                tech_stack = TECH_STACK.get(job_role, {})
         
         # 숙련도 옵션 (4개로 변경)
         proficiency_levels = ["해당없음", "초급", "중급", "고급"]
@@ -879,9 +885,7 @@ def show_survey_page(supabase):
         
         if submitted:
             # 유효성 검사
-            if not name or not name.strip():
-                st.error("이름을 입력해주세요.")
-            elif not job_role:
+            if not job_role:
                 st.error("직군을 선택해주세요.")
             elif job_role == "기타" and (not other_job_role or not other_job_role.strip()):
                 st.error("직군을 입력해주세요.")
@@ -889,12 +893,19 @@ def show_survey_page(supabase):
                 # 최종 직군 결정
                 final_job_role = other_job_role.strip() if job_role == "기타" else job_role
                 
+                # user_profiles에서 이름 가져오기
+                try:
+                    user_profile = supabase.table("user_profiles").select("name").eq("id", user_id).execute()
+                    user_name = user_profile.data[0].get("name", "") if user_profile.data else ""
+                except:
+                    user_name = ""
+                
                 # Supabase에 저장
                 try:
                     # responses는 각 기술을 개별 항목으로 저장 (기술명: 숙련도)
                     response_data = {
                         "user_id": user_id,
-                        "name": name.strip(),
+                        "name": user_name,  # user_profiles에서 가져온 이름 사용
                         "job_role": final_job_role,
                         "responses": responses  # {"기술명": "숙련도"} 형태
                     }
