@@ -647,17 +647,69 @@ def show_survey_page(supabase):
     st.info("⚠️ 설문 페이지는 현재 개발 중입니다. 기존 설문 코드를 Supabase로 전환 중입니다.")
     st.markdown("---")
     
-    # 로그아웃 버튼
-    if st.button("로그아웃", key="logout_btn"):
-        st.session_state.user = None
-        st.session_state.current_page = "login"
-        st.rerun()
-    
-    # 관리자 버튼
-    if st.session_state.user and is_admin(st.session_state.user.get("email", "")):
-        if st.button("관리자 페이지", key="admin_btn"):
-            st.session_state.current_page = "admin"
-            st.rerun()
+    # 사용자 정보 및 설정 섹션
+    if st.session_state.user:
+        user_email = st.session_state.user.get("email", "")
+        st.markdown(f"**로그인된 사용자**: {user_email}")
+        st.markdown("---")
+        
+        col_logout, col_admin, col_delete = st.columns(3)
+        
+        with col_logout:
+            if st.button("로그아웃", key="logout_btn", use_container_width=True):
+                st.session_state.user = None
+                st.session_state.current_page = "login"
+                st.rerun()
+        
+        with col_admin:
+            if st.session_state.user and is_admin(user_email):
+                if st.button("관리자 페이지", key="admin_btn", use_container_width=True):
+                    st.session_state.current_page = "admin"
+                    st.rerun()
+        
+        with col_delete:
+            if st.button("회원 탈퇴", key="delete_account_btn", use_container_width=True, type="secondary"):
+                st.session_state.show_delete_confirm = True
+                st.rerun()
+        
+        # 회원 탈퇴 확인 다이얼로그
+        if st.session_state.get("show_delete_confirm", False):
+            st.markdown("---")
+            st.warning("⚠️ **회원 탈퇴 확인**")
+            st.markdown("""
+            <div style="background: #fff3cd; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #ffc107; margin: 1rem 0;">
+                <p style="color: #856404; line-height: 1.8; font-size: 1.1rem;">
+                    회원 탈퇴를 진행하시겠습니까?<br>
+                    탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            col_confirm, col_cancel = st.columns(2)
+            with col_confirm:
+                if st.button("탈퇴하기", key="confirm_delete", type="primary", use_container_width=True):
+                    if supabase:
+                        user_id = st.session_state.user.get("id", "")
+                        if user_id:
+                            success, message = delete_user_account(supabase, user_id)
+                            if success:
+                                st.success(message)
+                                st.session_state.user = None
+                                st.session_state.current_page = "login"
+                                if "show_delete_confirm" in st.session_state:
+                                    del st.session_state.show_delete_confirm
+                                st.rerun()
+                            else:
+                                st.error(message)
+                        else:
+                            st.error("사용자 정보를 찾을 수 없습니다.")
+                    else:
+                        st.error("❌ Supabase 연결이 필요합니다.")
+            
+            with col_cancel:
+                if st.button("취소", key="cancel_delete", use_container_width=True):
+                    st.session_state.show_delete_confirm = False
+                    st.rerun()
 
 def show_admin_page(supabase):
     """관리자 페이지 (엑셀 다운로드 기능)"""
