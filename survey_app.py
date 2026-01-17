@@ -1026,6 +1026,14 @@ def main():
                             
                             selected_level = st.session_state[level_key]
                             selected_idx = levels.index(selected_level) if selected_level in levels else 0
+                            selected_icon = level_icons[selected_idx]
+                            
+                            # 선택된 내용 텍스트를 기술명 바로 아래에 표시
+                            if selected_level == "해당없음":
+                                status_text = f'<div style="margin-bottom: 0.75rem; padding: 0.4rem; text-align: center;"><span style="color: #666; font-size: 0.9rem;">선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
+                            else:
+                                status_text = f'<div style="margin-bottom: 0.75rem; padding: 0.4rem; text-align: center;"><span style="color: #667eea; font-size: 0.9rem;">선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
+                            st.markdown(status_text, unsafe_allow_html=True)
                             
                             # 5개 버튼을 세로로 배치 (아래에서 위로: 해당없음 -> 고급)
                             # 벽돌 쌓듯이 아래가 해당없음, 위가 고급
@@ -1041,14 +1049,6 @@ def main():
                                 ):
                                     st.session_state[level_key] = level
                                     st.rerun()
-                            
-                            # 선택된 내용 텍스트로 표시
-                            selected_icon = level_icons[selected_idx]
-                            if selected_level == "해당없음":
-                                status_text = f'<div style="margin-top: 0.5rem; padding: 0.5rem; background: #f5f5f5; border-radius: 6px; text-align: center;"><span style="color: #666; font-size: 0.85rem;"><strong>{selected_icon} {selected_level}</strong></span></div>'
-                            else:
-                                status_text = f'<div style="margin-top: 0.5rem; padding: 0.5rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-radius: 6px; text-align: center;"><span style="color: #667eea; font-size: 0.85rem;"><strong>✓ {selected_icon} {selected_level}</strong></span></div>'
-                            st.markdown(status_text, unsafe_allow_html=True)
                             
                             current_level = st.session_state[level_key]
                             if current_level != "해당없음":
