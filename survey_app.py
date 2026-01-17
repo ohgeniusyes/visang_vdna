@@ -845,12 +845,8 @@ def show_survey_page(supabase):
                         existing_proficiency = existing_responses.get(tech, "해당없음") if tech in existing_responses else "해당없음"
                         proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
                         
-                        # 세션 상태로 선택값 관리 (동적 반영을 위해)
+                        # selectbox 렌더링 (값을 읽어서 동적 반영)
                         proficiency_key = f"prof_{category}_{tech}"
-                        if proficiency_key not in st.session_state:
-                            st.session_state[proficiency_key] = existing_proficiency
-                        
-                        # selectbox 렌더링 (값을 읽어서 세션 상태에 저장)
                         proficiency = st.selectbox(
                             "숙련도",
                             options=proficiency_levels,
@@ -859,29 +855,25 @@ def show_survey_page(supabase):
                             label_visibility="collapsed"
                         )
                         
-                        # 선택값을 세션 상태에 저장 (동적 반영)
-                        current_proficiency = proficiency
-                        st.session_state[proficiency_key] = current_proficiency
-                        
                         # 선택된 숙련도를 텍스트로 표시 (기술명 바로 아래, 드롭다운 위에)
-                        # 세션 상태에서 값을 읽어서 표시 (동적 반영)
+                        # selectbox의 반환값을 직접 사용 (동적 반영)
                         proficiency_color = {
                             "해당없음": "#999999",
                             "초급": "#4CAF50",
                             "중급": "#2196F3",
                             "고급": "#FF9800"
-                        }.get(current_proficiency, "#666666")
+                        }.get(proficiency, "#666666")
                         
                         # 텍스트를 기술명 바로 아래에 표시 (드롭다운은 이미 위에 렌더링됨)
                         # CSS로 위치를 조정하여 드롭다운 위에 보이도록 함 (겹치지 않도록)
                         st.markdown(f"""
                         <div style="margin-top: -3.5rem; margin-bottom: 3.5rem; position: relative;">
-                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0; padding: 0.3rem 0; background: white; display: block;">선택: {current_proficiency}</p>
+                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0; padding: 0.3rem 0; background: white; display: block;">선택: {proficiency}</p>
                         </div>
                         """, unsafe_allow_html=True)
                         
                         # 응답 저장 (각 기술을 개별 항목으로)
-                        responses[tech] = current_proficiency
+                        responses[tech] = proficiency
         
         st.markdown("---")
         
