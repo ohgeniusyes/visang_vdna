@@ -237,8 +237,8 @@ TECH_STACK = {
     }
 }
 
-# 직군 목록
-JOB_ROLES = list(TECH_STACK.keys())
+# 직군 목록 (기타 옵션 추가)
+JOB_ROLES = list(TECH_STACK.keys()) + ["기타"]
 
 # Google Sheets 함수들 (더 이상 사용하지 않음 - Supabase로 전환)
 # def init_google_sheets(credentials_dict, spreadsheet_id):
@@ -657,74 +657,205 @@ def show_reset_password_page(supabase):
             st.rerun()
 
 def show_survey_page(supabase):
-    """설문 페이지 - 기존 코드는 나중에 통합 예정"""
+    """설문 페이지"""
     apply_common_styles()
-    st.info("⚠️ 설문 페이지는 현재 개발 중입니다. 기존 설문 코드를 Supabase로 전환 중입니다.")
+    
+    if not supabase:
+        st.error("❌ Supabase 연결이 필요합니다.")
+        return
+    
+    if not st.session_state.user:
+        st.session_state.current_page = "login"
+        st.rerun()
+        return
+    
+    user_id = st.session_state.user.get("id", "")
+    user_email = st.session_state.user.get("email", "")
+    
+    # 기존 응답 확인
+    existing_response_data = None
+    has_existing_response = False
+    try:
+        existing_response = supabase.table("survey_responses").select("*").eq("user_id", user_id).execute()
+        if existing_response.data and len(existing_response.data) > 0:
+            existing_response_data = existing_response.data[0]
+            has_existing_response = True
+    except Exception as e:
+        has_existing_response = False
+        existing_response_data = None
+    
+    st.title("📋 IT 개발자/데이터 전문가 기술 스택 설문")
     st.markdown("---")
     
-    # 사용자 정보 및 설정 섹션
-    if st.session_state.user:
-        user_email = st.session_state.user.get("email", "")
-        st.markdown(f"**로그인된 사용자**: {user_email}")
+    # 사용자 정보 표시
+    st.markdown(f"**로그인된 사용자**: {user_email}")
+    
+    if has_existing_response:
+        st.info("✅ 이미 설문에 응답하셨습니다. 아래에서 수정할 수 있습니다.")
+    
+    st.markdown("---")
+    
+    # 설문 폼
+    with st.form("survey_form", clear_on_submit=False):
+        # 이름 입력
+        name = st.text_input("이름 *", placeholder="홍길동", value=existing_response_data.get("name", "") if has_existing_response and existing_response_data else "")
+        
+        # 직군 선택
+        existing_job_role = existing_response_data.get("job_role", JOB_ROLES[0]) if has_existing_response and existing_response_data else JOB_ROLES[0]
+        job_role_index = JOB_ROLES.index(existing_job_role) if existing_job_role in JOB_ROLES else 0
+        job_role = st.selectbox(
+            "직군 선택 *",
+            options=JOB_ROLES,
+            index=job_role_index
+        )
+        
+        # "기타" 옵션 추가
+        other_job_role = None
+        if job_role == "기타":
+            other_job_role = st.text_input("직군을 입력해주세요", placeholder="예: QA 엔지니어")
+        
+        st.markdown("---")
+        st.markdown("### 기술 스택 및 숙련도")
+        st.markdown("각 기술에 대한 숙련도를 선택해주세요.")
+        
+        # 선택된 직군의 기술 스택 가져오기
+        tech_stack = TECH_STACK.get(job_role, {})
+        
+        # 숙련도 옵션
+        proficiency_levels = ["해당없음", "입문", "초급", "중급", "고급"]
+        
+        # 응답 데이터 구조
+        responses = {}
+        
+        # 각 카테고리별로 기술 선택 및 숙련도 입력
+        for category, technologies in tech_stack.items():
+            st.markdown(f"#### {category}")
+            
+            # 기술 선택 (멀티셀렉트)
+            existing_responses = existing_response_data.get("responses", {}) if has_existing_response and existing_response_data else {}
+            existing_techs_for_category = list(existing_responses.get(category, {}).keys()) if category in existing_responses else []
+            selected_techs = st.multiselect(
+                f"{category} 기술 선택",
+                options=technologies,
+                default=existing_techs_for_category,
+                key=f"tech_{category}"
+            )
+            
+            # 선택된 기술별 숙련도 입력
+            if selected_techs:
+                for tech in selected_techs:
+                    existing_proficiency = existing_responses.get(category, {}).get(tech, "해당없음") if category in existing_responses and tech in existing_responses.get(category, {}) else "해당없음"
+                    proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
+                    proficiency = st.selectbox(
+                        f"{tech} 숙련도",
+                        options=proficiency_levels,
+                        index=proficiency_index,
+                        key=f"prof_{category}_{tech}"
+                    )
+                    
+                    if category not in responses:
+                        responses[category] = {}
+                    responses[category][tech] = proficiency
+        
         st.markdown("---")
         
-        col_logout, col_admin, col_delete = st.columns(3)
+        # 제출 버튼
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            submitted = st.form_submit_button("설문 제출", type="primary", use_container_width=True)
         
-        with col_logout:
-            if st.button("로그아웃", key="logout_btn", use_container_width=True):
-                st.session_state.user = None
-                st.session_state.current_page = "login"
-                st.rerun()
-        
-        with col_admin:
-            if st.session_state.user and is_admin(user_email):
-                if st.button("관리자 페이지", key="admin_btn", use_container_width=True):
-                    st.session_state.current_page = "admin"
-                    st.rerun()
-        
-        with col_delete:
-            if st.button("회원 탈퇴", key="delete_account_btn", use_container_width=True, type="secondary"):
-                st.session_state.show_delete_confirm = True
-                st.rerun()
-        
-        # 회원 탈퇴 확인 다이얼로그
-        if st.session_state.get("show_delete_confirm", False):
-            st.markdown("---")
-            st.warning("⚠️ **회원 탈퇴 확인**")
-            st.markdown("""
-            <div style="background: #fff3cd; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #ffc107; margin: 1rem 0;">
-                <p style="color: #856404; line-height: 1.8; font-size: 1.1rem;">
-                    회원 탈퇴를 진행하시겠습니까?<br>
-                    탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            col_confirm, col_cancel = st.columns(2)
-            with col_confirm:
-                if st.button("탈퇴하기", key="confirm_delete", type="primary", use_container_width=True):
-                    if supabase:
-                        user_id = st.session_state.user.get("id", "")
-                        if user_id:
-                            success, message = delete_user_account(supabase, user_id)
-                            if success:
-                                st.success(message)
-                                st.session_state.user = None
-                                st.session_state.current_page = "login"
-                                if "show_delete_confirm" in st.session_state:
-                                    del st.session_state.show_delete_confirm
-                                st.rerun()
-                            else:
-                                st.error(message)
-                        else:
-                            st.error("사용자 정보를 찾을 수 없습니다.")
+        if submitted:
+            # 유효성 검사
+            if not name or not name.strip():
+                st.error("이름을 입력해주세요.")
+            elif job_role == "기타" and (not other_job_role or not other_job_role.strip()):
+                st.error("직군을 입력해주세요.")
+            else:
+                # 최종 직군 결정
+                final_job_role = other_job_role.strip() if job_role == "기타" else job_role
+                
+                # Supabase에 저장
+                try:
+                    response_data = {
+                        "user_id": user_id,
+                        "name": name.strip(),
+                        "job_role": final_job_role,
+                        "responses": responses
+                    }
+                    
+                    if has_existing_response and existing_response_data:
+                        # 기존 응답 업데이트
+                        response_id = existing_response_data["id"]
+                        supabase.table("survey_responses").update(response_data).eq("id", response_id).execute()
+                        st.success("✅ 설문이 수정되었습니다!")
                     else:
-                        st.error("❌ Supabase 연결이 필요합니다.")
-            
-            with col_cancel:
-                if st.button("취소", key="cancel_delete", use_container_width=True):
-                    st.session_state.show_delete_confirm = False
+                        # 새 응답 생성
+                        supabase.table("survey_responses").insert(response_data).execute()
+                        st.success("✅ 설문이 제출되었습니다! 감사합니다.")
+                    
                     st.rerun()
+                except Exception as e:
+                    st.error(f"설문 제출 오류: {str(e)}")
+    
+    st.markdown("---")
+    
+    # 사용자 설정 섹션
+    col_logout, col_admin, col_delete = st.columns(3)
+    
+    with col_logout:
+        if st.button("로그아웃", key="logout_btn", use_container_width=True):
+            st.session_state.user = None
+            st.session_state.current_page = "login"
+            st.rerun()
+    
+    with col_admin:
+        if is_admin(user_email):
+            if st.button("관리자 페이지", key="admin_btn", use_container_width=True):
+                st.session_state.current_page = "admin"
+                st.rerun()
+    
+    with col_delete:
+        if st.button("회원 탈퇴", key="delete_account_btn", use_container_width=True, type="secondary"):
+            st.session_state.show_delete_confirm = True
+            st.rerun()
+    
+    # 회원 탈퇴 확인 다이얼로그
+    if st.session_state.get("show_delete_confirm", False):
+        st.markdown("---")
+        st.warning("⚠️ **회원 탈퇴 확인**")
+        st.markdown("""
+        <div style="background: #fff3cd; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #ffc107; margin: 1rem 0;">
+            <p style="color: #856404; line-height: 1.8; font-size: 1.1rem;">
+                회원 탈퇴를 진행하시겠습니까?<br>
+                탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col_confirm, col_cancel = st.columns(2)
+        with col_confirm:
+            if st.button("탈퇴하기", key="confirm_delete", type="primary", use_container_width=True):
+                if supabase:
+                    if user_id:
+                        success, message = delete_user_account(supabase, user_id)
+                        if success:
+                            st.success(message)
+                            st.session_state.user = None
+                            st.session_state.current_page = "login"
+                            if "show_delete_confirm" in st.session_state:
+                                del st.session_state.show_delete_confirm
+                            st.rerun()
+                        else:
+                            st.error(message)
+                    else:
+                        st.error("사용자 정보를 찾을 수 없습니다.")
+                else:
+                    st.error("❌ Supabase 연결이 필요합니다.")
+        
+        with col_cancel:
+            if st.button("취소", key="cancel_delete", use_container_width=True):
+                st.session_state.show_delete_confirm = False
+                st.rerun()
 
 def show_admin_page(supabase):
     """관리자 페이지 (엑셀 다운로드 기능)"""
