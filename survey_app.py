@@ -684,23 +684,28 @@ def show_survey_page(supabase):
         has_existing_response = False
         existing_response_data = None
     
-    # V-DNA 브랜딩 이미지 표시
+    # V-DNA 브랜딩 이미지 표시 (파이리 캐릭터)
     try:
         # 이미지 파일 표시 (Streamlit Cloud에서도 작동하도록)
-        st.image("visang_logo.png", use_container_width=True)
+        # 사용자가 제공한 V-DNA 브랜딩 이미지 (파이리 캐릭터 포함)
+        st.image("vdna_banner.png", use_container_width=True)
     except Exception as e:
-        # 이미지가 없거나 로드 실패 시 HTML로 대체 이미지 영역 표시
-        st.markdown("""
-        <div style="text-align: center; margin: 2rem 0;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 3rem 2rem; border-radius: 20px;">
-                <h1 style="color: white; font-size: 2.5rem; margin-bottom: 1rem;">V-DNA</h1>
-                <p style="color: rgba(255,255,255,0.95); font-size: 1.2rem; margin-bottom: 0.5rem;">비상교육 인재</p>
-                <p style="color: rgba(255,255,255,0.95); font-size: 1.2rem; margin-bottom: 0.5rem;">데이터 기반</p>
-                <p style="color: rgba(255,255,255,0.95); font-size: 1.2rem; margin-bottom: 1rem;">미래 조직 설계</p>
-                <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">AI in Visang</p>
+        # vdna_banner.png가 없으면 visang_logo.png 시도
+        try:
+            st.image("visang_logo.png", use_container_width=True)
+        except:
+            # 이미지가 없거나 로드 실패 시 HTML로 대체 이미지 영역 표시
+            st.markdown("""
+            <div style="text-align: center; margin: 2rem 0;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 3rem 2rem; border-radius: 20px;">
+                    <h1 style="color: white; font-size: 2.5rem; margin-bottom: 1rem;">V-DNA</h1>
+                    <p style="color: rgba(255,255,255,0.95); font-size: 1.2rem; margin-bottom: 0.5rem;">비상교육 인재</p>
+                    <p style="color: rgba(255,255,255,0.95); font-size: 1.2rem; margin-bottom: 0.5rem;">데이터 기반</p>
+                    <p style="color: rgba(255,255,255,0.95); font-size: 1.2rem; margin-bottom: 1rem;">미래 조직 설계</p>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">AI in Visang</p>
+                </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
     
     st.title("📋 IT 개발자/데이터 전문가 기술 스택 설문")
     st.markdown("---")
