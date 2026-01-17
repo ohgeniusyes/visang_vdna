@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import re
 
 def init_supabase() -> Client:
-    """Supabase 클라이언트 초기화"""
+    """Supabase 클라이언트 초기화 (anon key 사용)"""
     try:
         supabase_url = st.secrets.get("SUPABASE", {}).get("URL")
         supabase_key = st.secrets.get("SUPABASE", {}).get("ANON_KEY")
@@ -23,6 +23,44 @@ def init_supabase() -> Client:
         return supabase
     except Exception as e:
         st.error(f"❌ Supabase 연결 오류: {str(e)}")
+        return None
+
+def init_supabase_admin() -> Client:
+    """Supabase Admin 클라이언트 초기화 (service_role key 사용)"""
+    try:
+        from supabase.lib.client_options import ClientOptions
+        
+        supabase_url = st.secrets.get("SUPABASE", {}).get("URL")
+        service_role_key = st.secrets.get("SUPABASE", {}).get("SERVICE_ROLE_KEY")
+        
+        if not supabase_url or not service_role_key:
+            st.error("❌ Supabase Admin 설정이 없습니다. SERVICE_ROLE_KEY를 확인해주세요.")
+            return None
+        
+        # Admin API 사용을 위한 옵션 설정
+        supabase: Client = create_client(
+            supabase_url,
+            service_role_key,
+            options=ClientOptions(
+                auto_refresh_token=False,
+                persist_session=False
+            )
+        )
+        return supabase
+    except ImportError:
+        # ClientOptions가 없는 경우 기본 방식 사용
+        try:
+            supabase_url = st.secrets.get("SUPABASE", {}).get("URL")
+            service_role_key = st.secrets.get("SUPABASE", {}).get("SERVICE_ROLE_KEY")
+            
+            if not supabase_url or not service_role_key:
+                return None
+            
+            supabase: Client = create_client(supabase_url, service_role_key)
+            return supabase
+        except Exception as e:
+            return None
+    except Exception as e:
         return None
 
 def validate_email(email: str) -> tuple[bool, str]:
@@ -261,15 +299,30 @@ def reset_password(supabase: Client, email: str, code: str, new_password: str) -
         return False, f"비밀번호 재설정 오류: {str(e)}"
 
 def delete_user_account(supabase: Client, user_id: str) -> tuple[bool, str]:
-    """회원 탈퇴"""
+    """회원 탈퇴 - auth.users와 user_profiles 모두 삭제"""
     try:
-        # user_profiles 삭제 (CASCADE로 survey_responses도 자동 삭제)
-        supabase.table("user_profiles").delete().eq("id", user_id).execute()
+        # Admin 클라이언트 생성 (service_role key 사용)
+        admin_supabase = init_supabase_admin()
+        if not admin_supabase:
+            return False, "회원 탈퇴에 필요한 권한이 없습니다. SERVICE_ROLE_KEY를 확인해주세요."
         
-        # Supabase Auth에서 사용자 삭제는 admin API가 필요하므로
-        # 여기서는 프로필만 삭제하고, 실제 사용자 삭제는 관리자가 처리
+        # 1. user_profiles 삭제 (CASCADE로 survey_responses도 자동 삭제)
+        try:
+            supabase.table("user_profiles").delete().eq("id", user_id).execute()
+        except Exception as e:
+            # 프로필이 없을 수도 있으므로 경고만
+            pass
         
-        return True, "회원 탈퇴가 완료되었습니다."
+        # 2. Supabase Auth에서 사용자 삭제 (service_role key 필요)
+        try:
+            admin_supabase.auth.admin.delete_user(user_id)
+        except Exception as e:
+            # 사용자가 이미 삭제되었거나 없는 경우
+            error_msg = str(e)
+            if "not found" not in error_msg.lower() and "does not exist" not in error_msg.lower():
+                return False, f"사용자 삭제 오류: {error_msg}"
+        
+        return True, "회원 탈퇴가 완료되었습니다. 모든 데이터가 삭제되었습니다."
     except Exception as e:
         return False, f"회원 탈퇴 오류: {str(e)}"
 
