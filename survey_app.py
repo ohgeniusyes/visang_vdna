@@ -723,25 +723,6 @@ def show_survey_page(supabase):
     
     st.markdown("---")
     
-    # 숙련도 설명
-    st.markdown("### 📌 숙련도 안내")
-    st.markdown("""
-    <div style="background: #f0f4ff; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #2661E8; margin: 1rem 0;">
-        <h4 style="color: #2661E8; margin-bottom: 1rem;">숙련도 기준</h4>
-        <ul style="color: #1a1a1a; line-height: 2; font-size: 1rem;">
-            <li><strong>해당없음</strong>: 해당 기술을 사용하지 않거나 경험이 없음 (기본값)</li>
-            <li><strong>초급</strong>: 기본적인 사용법을 알고 있으며, 간단한 작업을 수행할 수 있음</li>
-            <li><strong>중급</strong>: 일반적인 업무를 독립적으로 수행할 수 있으며, 문제 해결 능력이 있음</li>
-            <li><strong>고급</strong>: 복잡한 문제를 해결할 수 있으며, 다른 사람을 가르치거나 아키텍처 설계가 가능함</li>
-        </ul>
-        <p style="color: #666; margin-top: 1rem; font-size: 0.95rem;">
-            💡 <strong>참고:</strong> "해당없음"이 기본값이므로, 해당 기술을 사용하지 않거나 경험이 없다면 별도로 선택하지 않아도 됩니다.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
     # 직군 선택 (폼 밖에서 처리 - 라디오 버튼 방식)
     st.markdown("### 직군 선택 *")
     existing_job_role = existing_response_data.get("job_role", "") if has_existing_response and existing_response_data else ""
@@ -801,6 +782,23 @@ def show_survey_page(supabase):
     if job_role == "기타":
         other_job_role = st.text_input("직군을 입력해주세요 *", placeholder="예: QA 엔지니어", value=other_job_role if other_job_role else "", key="other_job_role_input")
     
+    # 숙련도 설명 (직군 선택 바로 밑으로 이동)
+    st.markdown("### 📌 숙련도 안내")
+    st.markdown("""
+    <div style="background: #f0f4ff; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #2661E8; margin: 1rem 0;">
+        <h4 style="color: #2661E8; margin-bottom: 1rem;">숙련도 기준</h4>
+        <ul style="color: #1a1a1a; line-height: 2; font-size: 1rem;">
+            <li><strong>해당없음</strong>: 해당 기술을 사용하지 않거나 경험이 없음 (기본값)</li>
+            <li><strong>초급</strong>: 기본적인 사용법을 알고 있으며, 간단한 작업을 수행할 수 있음</li>
+            <li><strong>중급</strong>: 일반적인 업무를 독립적으로 수행할 수 있으며, 문제 해결 능력이 있음</li>
+            <li><strong>고급</strong>: 복잡한 문제를 해결할 수 있으며, 다른 사람을 가르치거나 아키텍처 설계가 가능함</li>
+        </ul>
+        <p style="color: #666; margin-top: 1rem; font-size: 0.95rem;">
+            💡 <strong>참고:</strong> "해당없음"이 기본값이므로, 해당 기술을 사용하지 않거나 경험이 없다면 별도로 선택하지 않아도 됩니다.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.markdown("---")
     
     # 설문 폼
@@ -847,34 +845,43 @@ def show_survey_page(supabase):
                         existing_proficiency = existing_responses.get(tech, "해당없음") if tech in existing_responses else "해당없음"
                         proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
                         
-                        # selectbox를 먼저 렌더링하여 값을 읽음 (동적 반영을 위해)
+                        # 세션 상태로 선택값 관리 (동적 반영을 위해)
+                        proficiency_key = f"prof_{category}_{tech}"
+                        if proficiency_key not in st.session_state:
+                            st.session_state[proficiency_key] = existing_proficiency
+                        
+                        # selectbox 렌더링 (값을 읽어서 세션 상태에 저장)
                         proficiency = st.selectbox(
                             "숙련도",
                             options=proficiency_levels,
                             index=proficiency_index,
-                            key=f"prof_{category}_{tech}",
+                            key=proficiency_key,
                             label_visibility="collapsed"
                         )
                         
+                        # 선택값을 세션 상태에 저장 (동적 반영)
+                        current_proficiency = proficiency
+                        st.session_state[proficiency_key] = current_proficiency
+                        
                         # 선택된 숙련도를 텍스트로 표시 (기술명 바로 아래, 드롭다운 위에)
-                        # selectbox 값을 읽은 후 텍스트로 표시하되, CSS로 위치를 조정
+                        # 세션 상태에서 값을 읽어서 표시 (동적 반영)
                         proficiency_color = {
                             "해당없음": "#999999",
                             "초급": "#4CAF50",
                             "중급": "#2196F3",
                             "고급": "#FF9800"
-                        }.get(proficiency, "#666666")
+                        }.get(current_proficiency, "#666666")
                         
                         # 텍스트를 기술명 바로 아래에 표시 (드롭다운은 이미 위에 렌더링됨)
-                        # CSS transform을 사용하여 드롭다운 위에 표시되도록 조정 (겹치지 않도록)
+                        # CSS로 위치를 조정하여 드롭다운 위에 보이도록 함 (겹치지 않도록)
                         st.markdown(f"""
-                        <div style="margin-top: -3.2rem; margin-bottom: 3.2rem; position: relative; z-index: 5;">
-                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0; padding: 0.2rem 0; line-height: 1.4;">선택: {proficiency}</p>
+                        <div style="margin-top: -3.5rem; margin-bottom: 3.5rem; position: relative;">
+                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0; padding: 0.3rem 0; background: white; display: block;">선택: {current_proficiency}</p>
                         </div>
                         """, unsafe_allow_html=True)
                         
                         # 응답 저장 (각 기술을 개별 항목으로)
-                        responses[tech] = proficiency
+                        responses[tech] = current_proficiency
         
         st.markdown("---")
         
