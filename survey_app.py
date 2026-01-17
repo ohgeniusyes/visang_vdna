@@ -826,7 +826,10 @@ def show_survey_page(supabase):
         responses = {}
         
         # 각 카테고리별로 기술 표시
-        for category, technologies in tech_stack.items():
+        for idx, (category, technologies) in enumerate(tech_stack.items()):
+            # 첫 번째 카테고리가 아니면 위에 간격 추가
+            if idx > 0:
+                st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(f"#### {category}")
             
             # 기존 응답 불러오기
