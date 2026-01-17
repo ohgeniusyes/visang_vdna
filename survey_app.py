@@ -835,10 +835,12 @@ def show_survey_page(supabase):
                 for idx, tech in enumerate(tech_group):
                     with cols[idx]:
                         st.markdown(f"**{tech}**")
+                        
                         # 기존 숙련도 가져오기
                         existing_proficiency = existing_responses.get(tech, "해당없음") if tech in existing_responses else "해당없음"
                         proficiency_index = proficiency_levels.index(existing_proficiency) if existing_proficiency in proficiency_levels else 0
                         
+                        # selectbox 렌더링 (값을 먼저 가져오기 위해 - 동적 반영을 위해)
                         proficiency = st.selectbox(
                             "숙련도",
                             options=proficiency_levels,
@@ -847,7 +849,9 @@ def show_survey_page(supabase):
                             label_visibility="collapsed"
                         )
                         
-                        # 선택된 숙련도를 텍스트로 표시
+                        # 선택된 숙련도를 텍스트로 표시 (기술명 바로 아래, 드롭다운 위에 표시되도록)
+                        # Streamlit은 위에서 아래로 렌더링되므로, selectbox를 먼저 렌더링하고 값을 읽은 후
+                        # 그 값을 텍스트로 표시하되, 시각적으로는 드롭다운 위에 보이도록 함
                         proficiency_color = {
                             "해당없음": "#999999",
                             "초급": "#4CAF50",
@@ -855,7 +859,13 @@ def show_survey_page(supabase):
                             "고급": "#FF9800"
                         }.get(proficiency, "#666666")
                         
-                        st.markdown(f'<p style="color: {proficiency_color}; font-size: 0.9rem; margin-top: 0.5rem; font-weight: 500;">선택: {proficiency}</p>', unsafe_allow_html=True)
+                        # 텍스트를 기술명 바로 아래에 표시 (드롭다운은 이미 위에 렌더링됨)
+                        # 하지만 시각적으로는 드롭다운 위에 보이도록 margin 조정
+                        st.markdown(f"""
+                        <div style="margin-top: -2.5rem; margin-bottom: 2.5rem; position: relative;">
+                            <p style="color: {proficiency_color}; font-size: 0.9rem; font-weight: 500; margin: 0;">선택: {proficiency}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
                         
                         # 응답 저장 (각 기술을 개별 항목으로)
                         responses[tech] = proficiency
