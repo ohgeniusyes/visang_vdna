@@ -852,18 +852,20 @@ def main():
     
     if not name or name.strip() == "":
         st.info("👆 위에 이름을 입력해주세요.")
-        st.stop()
     
     st.markdown("---")
     
-    # 직군 선택
+    # 직군 선택 (라디오 버튼으로 표시)
     st.markdown("### 1️⃣ 직군 선택")
-    role_options = [""] + JOB_ROLES + ["기타"]
-    selected_role = st.selectbox(
-        "귀하의 직군을 선택해주세요:",
+    st.markdown("귀하의 직군을 선택해주세요:")
+    
+    role_options = JOB_ROLES + ["기타"]
+    selected_role = st.radio(
+        "",
         options=role_options,
         key="job_role",
-        label_visibility="visible"
+        label_visibility="collapsed",
+        horizontal=False
     )
     
     # 기타 선택 시 주관식 입력
@@ -875,14 +877,8 @@ def main():
             placeholder="예: QA 엔지니어, 인프라 엔지니어 등",
             label_visibility="visible"
         )
-        if not other_role or other_role.strip() == "":
-            st.info("👆 기타 직군을 입력해주세요.")
-            st.stop()
-        selected_role = f"기타 ({other_role.strip()})"
-    
-    if not selected_role or selected_role == "":
-        st.info("👆 위에서 직군을 선택해주세요.")
-        st.stop()
+        if other_role and other_role.strip() != "":
+            selected_role = f"기타 ({other_role.strip()})"
     
     st.markdown("---")
     
@@ -937,7 +933,11 @@ def main():
     """, unsafe_allow_html=True)
     
     # 직군별 기술 스택 가져오기 (기타인 경우 빈 딕셔너리)
-    if selected_role.startswith("기타"):
+    if not selected_role or selected_role == "":
+        st.info("👆 위에서 직군을 선택해주세요.")
+        tech_data = {}
+        form_data = {"이름": name.strip() if name else "", "직군": ""}
+    elif selected_role.startswith("기타"):
         tech_data = {}
         st.info("💡 기타 직군을 선택하셨습니다. 아래에서 사용하시는 기술 스택을 직접 입력해주세요.")
         custom_tech = st.text_area(
@@ -947,7 +947,7 @@ def main():
             height=100,
             help="기술명과 숙련도를 함께 입력해주세요."
         )
-        form_data = {"이름": name.strip(), "직군": selected_role, "기술 스택": custom_tech if custom_tech else ""}
+        form_data = {"이름": name.strip() if name else "", "직군": selected_role, "기술 스택": custom_tech if custom_tech else ""}
     else:
         # selected_role이 TECH_STACK에 있는지 확인
         original_role = selected_role
@@ -958,7 +958,7 @@ def main():
         else:
             tech_data = TECH_STACK[original_role]
         
-        form_data = {"이름": name.strip(), "직군": selected_role}
+        form_data = {"이름": name.strip() if name else "", "직군": selected_role}
         
         # 각 카테고리별로 기술 선택
         if tech_data:
@@ -1063,8 +1063,12 @@ def main():
     
     # 제출 버튼 클릭 시 처리
     if submit_button:
-        # 데이터 검증
-        if selected_role.startswith("기타"):
+        # 기본 검증
+        if not name or name.strip() == "":
+            st.warning("⚠️ 이름을 입력해주세요.")
+        elif not selected_role or selected_role == "":
+            st.warning("⚠️ 직군을 선택해주세요.")
+        elif selected_role.startswith("기타"):
             if not form_data.get("기술 스택", "").strip():
                 st.warning("⚠️ 기술 스택을 입력해주세요.")
             else:
