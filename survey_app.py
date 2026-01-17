@@ -998,27 +998,67 @@ def main():
                             selected_idx = levels.index(selected_level) if selected_level in levels else 0
                             selected_icon = level_icons[selected_idx]
                             
-                            # 선택된 내용 텍스트를 기술명 바로 아래에 표시
+                            # 선택된 내용 텍스트를 기술명 바로 아래에 표시 (고유 ID로 즉시 업데이트 가능하도록)
+                            status_id = f"status_{level_key}"
                             if selected_level == "해당없음":
-                                status_text = f'<div style="margin-bottom: 0.75rem; padding: 0.4rem; text-align: center;"><span style="color: #666; font-size: 0.9rem;">선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
+                                status_text = f'<div id="{status_id}" style="margin-bottom: 0.75rem; padding: 0.4rem; text-align: center;"><span style="color: #666; font-size: 0.9rem;">선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
                             else:
-                                status_text = f'<div style="margin-bottom: 0.75rem; padding: 0.4rem; text-align: center;"><span style="color: #667eea; font-size: 0.9rem;">선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
+                                status_text = f'<div id="{status_id}" style="margin-bottom: 0.75rem; padding: 0.4rem; text-align: center;"><span style="color: #667eea; font-size: 0.9rem;">선택됨: <strong>{selected_icon} {selected_level}</strong></span></div>'
                             st.markdown(status_text, unsafe_allow_html=True)
+                            
+                            # 버튼 클릭 시 즉시 반영을 위한 JavaScript 추가
+                            level_mapping = {level: (icon, "#666" if level == "해당없음" else "#667eea") for level, icon in zip(levels, level_icons)}
+                            js_mapping = str(level_mapping).replace("'", '"')
                             
                             # 5개 버튼을 세로로 배치 (아래에서 위로: 해당없음 -> 고급)
                             # 벽돌 쌓듯이 아래가 해당없음, 위가 고급
                             for level_idx, (level, icon, color) in enumerate(zip(levels, level_icons, level_colors)):
                                 is_selected = selected_level == level
                                 button_label = f"{icon} {level}"
+                                button_key = f"{level_key}_{level}"
                                 
                                 if st.button(
                                     button_label,
-                                    key=f"{level_key}_{level}",
+                                    key=button_key,
                                     use_container_width=True,
                                     type="primary" if is_selected else "secondary"
                                 ):
+                                    # 상태를 먼저 업데이트
                                     st.session_state[level_key] = level
                                     st.rerun()
+                            
+                            # 모든 버튼에 JavaScript 이벤트 리스너 추가 (즉시 반영)
+                            button_js = f"""
+                            <script>
+                            (function() {{
+                                const statusDiv = document.getElementById('{status_id}');
+                                const levelMapping = {{
+                                    "해당없음": {{icon: "➖", color: "#666"}},
+                                    "입문": {{icon: "🔰", color: "#667eea"}},
+                                    "초급": {{icon: "📚", color: "#667eea"}},
+                                    "중급": {{icon: "⚙️", color: "#667eea"}},
+                                    "고급": {{icon: "🏆", color: "#667eea"}}
+                                }};
+                                
+                                // 모든 버튼에 클릭 이벤트 추가
+                                const buttons = document.querySelectorAll('button[data-testid*="baseButton"][aria-label*="{level_key}"]');
+                                buttons.forEach(button => {{
+                                    button.addEventListener('click', function(e) {{
+                                        const buttonText = button.textContent.trim();
+                                        for (const [level, data] of Object.entries(levelMapping)) {{
+                                            if (buttonText.includes(data.icon) || buttonText.includes(level)) {{
+                                                if (statusDiv) {{
+                                                    statusDiv.innerHTML = '<span style="color: ' + data.color + '; font-size: 0.9rem;">선택됨: <strong>' + data.icon + ' ' + level + '</strong></span>';
+                                                }}
+                                                break;
+                                            }}
+                                        }}
+                                    }}, {{capture: true}});
+                                }});
+                            }})();
+                            </script>
+                            """
+                            st.markdown(button_js, unsafe_allow_html=True)
                             
                             # 선택된 버튼에 색상 적용 (동적 CSS - 모든 선택된 버튼을 동일한 하늘색으로)
                             if selected_level:
