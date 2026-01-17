@@ -26,20 +26,115 @@ TECH_STACK = {
         "SQL", "Bash", "Shell Script", "HTML", "CSS", "Swift", "Objective-C", "Kotlin", 
         "Flutter", "Dart", "R", "Scala", "C", "YAML", "Groovy", "PowerShell"
     ]))),
-    "프레임워크/라이브러리": sorted(list(set([
+    "프레임워크": sorted(list(set([
         "Spring", "Spring Boot", "Thymeleaf", "JSP", "ASP.NET", ".NET", "FastAPI", "Django", 
         "Flask", "Node.js", "Express", "Nest.js", "Koa", "Laravel", "Symfony", "CodeIgniter", 
-        "JWT", "Next.js", "React", "Vue.js", "Vue", "Angular", "jQuery", "Nuxt.js", "Svelte", 
-        "Vite", "Webpack", "Babel", "UIKit", "SwiftUI", "Combine", "CoreData", "Android SDK", 
-        "Jetpack Compose", "Room", "Retrofit", "React Native", "Flutter", "Expo", "Ionic", 
-        "TensorFlow", "PyTorch", "Transformers", "LangChain", "LlamaIndex", "Scikit-learn", 
-        "OpenCV", "Keras", "NumPy", "SciPy", "Streamlit", "RDKit", "Apache Spark", "Airflow", 
-        "Kafka", "Hadoop", "Flink", "Storm", "pandas", "statsmodels", "XGBoost", "Jenkins", 
-        "GitLab Actions", "GitHub Actions", "ArgoCD", "Ansible", "CircleCI", "Travis CI", 
-        "Terraform", "Spinnaker", "MLflow", "Kubeflow", "DVC", "Weights & Biases", "Neptune.ai", 
-        "ClearML", "Sagemaker", "Vertex AI", "Argo Workflow", "Unity", "Unreal Engine", 
-        "Cocos2d-x", "Godot", "Metasploit", "Nmap", "Wireshark", "Burp Suite", "OWASP ZAP", 
-        "Nessus", "OpenVAS", "Snort", "Suricata", "Zeek", "OSSEC", "Wazuh", "ggplot2", "dplyr"
+        "Next.js", "React", "Vue.js", "Vue", "Angular", "Nuxt.js", "Svelte", "UIKit", 
+        "SwiftUI", "Combine", "CoreData", "Android SDK", "Jetpack Compose", "React Native", 
+        "Flutter", "Expo", "Ionic", "Apache Spark", "Airflow", "Kafka", "Hadoop", "Flink", 
+        "Storm", "Jenkins", "GitLab Actions", "GitHub Actions", "ArgoCD", "Ansible", 
+        "CircleCI", "Travis CI", "Terraform", "Spinnaker", "MLflow", "Kubeflow", "DVC", 
+        "Weights & Biases", "Neptune.ai", "ClearML", "Sagemaker", "Vertex AI", "Argo Workflow", 
+        "Unity", "Unreal Engine", "Cocos2d-x", "Godot"
+    ]))),
+    "라이브러리": sorted(list(set([
+        # 웹 개발
+        "JWT", "jQuery", "Vite", "Webpack", "Babel", "Axios", "Lodash", "Moment.js", 
+        "Day.js", "Chart.js", "D3.js", "Three.js", "Socket.io", "Express-session",
+        
+        # 데이터 처리 및 분석
+        "pandas", "NumPy", "SciPy", "Polars", "Dask", "Modin", "Vaex",
+        
+        # 통계 및 모델링
+        "statsmodels", "scipy.stats", "pingouin", "Researchpy", "statsmodels.api",
+        
+        # 머신러닝
+        "Scikit-learn", "XGBoost", "LightGBM", "CatBoost", "TensorFlow", "PyTorch", 
+        "Keras", "Transformers", "LangChain", "LlamaIndex", "Hugging Face", "OpenCV", 
+        "scikit-image", "imgaug", "albumentations",
+        
+        # 딥러닝 특화
+        "TensorFlow Hub", "PyTorch Lightning", "Fast.ai", "JAX", "Flax",
+        
+        # 자연어 처리
+        "NLTK", "spaCy", "Gensim", "TextBlob", "transformers", "sentence-transformers",
+        
+        # 컴퓨터 비전
+        "OpenCV", "Pillow", "scikit-image", "imageio", "matplotlib", "seaborn", "plotly",
+        
+        # 시각화
+        "Matplotlib", "Seaborn", "Plotly", "Bokeh", "Altair", "ggplot2", "dplyr", 
+        "plotnine", "vega-lite", "Observable Plot",
+        
+        # 데이터베이스 및 ORM
+        "SQLAlchemy", "Django ORM", "Prisma", "Sequelize", "TypeORM", "Mongoose", 
+        "Room", "Retrofit", "Realm", "SQLite3",
+        
+        # API 및 네트워크
+        "Requests", "urllib3", "httpx", "aiohttp", "grequests", "httpie",
+        
+        # 테스팅
+        "pytest", "unittest", "Jest", "Mocha", "Chai", "Cypress", "Selenium", 
+        "Playwright", "Robot Framework",
+        
+        # 유틸리티
+        "Streamlit", "Gradio", "Dash", "Shiny", "Panel", "Voila",
+        
+        # 보안
+        "Metasploit", "Nmap", "Wireshark", "Burp Suite", "OWASP ZAP", "Nessus", 
+        "OpenVAS", "Snort", "Suricata", "Zeek", "OSSEC", "Wazuh",
+        
+        # 특수 도메인
+        "RDKit", "Biopython", "PyMOL", "MDTraj", "MDAnalysis",
+        
+        # 통계 모델링 (추가)
+        "statsmodels", "scipy.stats", "pingouin", "Researchpy", "pymc3", "pymc4", 
+        "arviz", "bambi", "emcee", "corner", "scipy.optimize",
+        
+        # 클러스터링 및 차원 축소
+        "scikit-learn.cluster", "scikit-learn.decomposition", "UMAP", "t-SNE", 
+        "hdbscan", "DBSCAN", "K-Means", "Hierarchical Clustering",
+        
+        # 회귀 분석
+        "Linear Regression", "Logistic Regression", "Ridge Regression", "Lasso Regression", 
+        "Elastic Net", "Polynomial Regression", "Support Vector Regression",
+        
+        # 분류
+        "Random Forest", "Decision Tree", "Naive Bayes", "SVM", "K-Nearest Neighbors", 
+        "Neural Networks", "Gradient Boosting",
+        
+        # 시계열 분석
+        "statsmodels.tsa", "prophet", "pmdarima", "tsfresh", "tslearn", "sktime",
+        
+        # 베이지안 통계
+        "pymc3", "pymc4", "arviz", "bambi", "emcee", "corner",
+        
+        # 생존 분석
+        "lifelines", "scikit-survival",
+        
+        # A/B 테스트 및 실험 설계
+        "scipy.stats", "statsmodels.stats", "pingouin",
+        
+        # 텍스트 마이닝
+        "NLTK", "spaCy", "Gensim", "TextBlob", "transformers", "sentence-transformers",
+        
+        # 네트워크 분석
+        "NetworkX", "igraph", "graph-tool",
+        
+        # 지리공간 분석
+        "GeoPandas", "Shapely", "Fiona", "Rasterio", "Folium", "Basemap",
+        
+        # 금융 분석
+        "pandas-datareader", "yfinance", "QuantLib", "zipline", "backtrader",
+        
+        # 이미지 처리
+        "Pillow", "scikit-image", "imageio", "opencv-python", "PIL",
+        
+        # 오디오 처리
+        "librosa", "soundfile", "pydub",
+        
+        # 비디오 처리
+        "opencv-python", "moviepy", "ffmpeg-python"
     ]))),
     "아키텍처": sorted(list(set([
         "MSA (마이크로서비스 아키텍처)", "EDA (이벤트 기반 아키텍처)", "RESTful API", "서버리스 아키텍처"
