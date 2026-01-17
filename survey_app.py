@@ -475,3 +475,4 @@ def show_admin_page(supabase):
         st.rerun()
 
 if __name__ == "__main__":
+    main()
