@@ -684,15 +684,20 @@ def show_survey_page(supabase):
         has_existing_response = False
         existing_response_data = None
     
-    # V-DNA 브랜딩 이미지 표시 (파이리 캐릭터)
-    try:
-        # 사용자가 제공한 V-DNA 브랜딩 이미지 (파이리 캐릭터 포함)
-        # 이미지 크기 조정 (너무 크지 않도록)
-        st.image("vdna_banner.png", use_container_width=True, output_format="PNG")
-    except Exception as e:
-        # vdna_banner.png가 없으면 visang_logo.png 시도 (크기 조정)
+    # 이미지 배치: visang_logo.png 왼쪽 위, vdna_banner.png 메인 배너
+    col_logo, col_banner = st.columns([1, 3])
+    
+    with col_logo:
         try:
-            st.image("visang_logo.png", width=800, output_format="PNG")
+            # visang_logo.png 왼쪽 위에 작게 배치
+            st.image("visang_logo.png", width=150, output_format="PNG")
+        except:
+            pass
+    
+    with col_banner:
+        try:
+            # vdna_banner.png 메인 배너로 배치
+            st.image("vdna_banner.png", use_container_width=True, output_format="PNG")
         except:
             # 이미지가 없거나 로드 실패 시 HTML로 대체 이미지 영역 표시
             st.markdown("""
@@ -822,11 +827,11 @@ def show_survey_page(supabase):
             # 기존 응답 불러오기
             existing_responses = existing_response_data.get("responses", {}) if has_existing_response and existing_response_data else {}
             
-            # 기술을 4개씩 그룹으로 나누기
-            tech_groups = [technologies[i:i+4] for i in range(0, len(technologies), 4)]
+            # 기술을 5개씩 그룹으로 나누기
+            tech_groups = [technologies[i:i+5] for i in range(0, len(technologies), 5)]
             
             for tech_group in tech_groups:
-                cols = st.columns(4)
+                cols = st.columns(5)
                 for idx, tech in enumerate(tech_group):
                     with cols[idx]:
                         st.markdown(f"**{tech}**")
@@ -841,6 +846,16 @@ def show_survey_page(supabase):
                             key=f"prof_{category}_{tech}",
                             label_visibility="collapsed"
                         )
+                        
+                        # 선택된 숙련도를 텍스트로 표시
+                        proficiency_color = {
+                            "해당없음": "#999999",
+                            "초급": "#4CAF50",
+                            "중급": "#2196F3",
+                            "고급": "#FF9800"
+                        }.get(proficiency, "#666666")
+                        
+                        st.markdown(f'<p style="color: {proficiency_color}; font-size: 0.9rem; margin-top: 0.5rem; font-weight: 500;">선택: {proficiency}</p>', unsafe_allow_html=True)
                         
                         # 응답 저장 (각 기술을 개별 항목으로)
                         responses[tech] = proficiency
