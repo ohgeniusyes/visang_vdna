@@ -26,122 +26,29 @@ TECH_STACK = {
         "SQL", "Bash", "Shell Script", "HTML", "CSS", "Swift", "Objective-C", "Kotlin", 
         "Flutter", "Dart", "R", "Scala", "C", "YAML", "Groovy", "PowerShell"
     ]))),
-    "웹 프레임워크": sorted(list(set([
-        "Spring", "Spring Boot", "Thymeleaf", "JSP", "ASP.NET", ".NET", "FastAPI", "Django", 
-        "Flask", "Node.js", "Express", "Nest.js", "Koa", "Laravel", "Symfony", "CodeIgniter"
-    ]))),
-    "프론트엔드 프레임워크": sorted(list(set([
-        "React", "Vue.js", "Vue", "Angular", "Next.js", "Nuxt.js", "Svelte"
-    ]))),
-    "모바일 프레임워크": sorted(list(set([
-        "UIKit", "SwiftUI", "Combine", "CoreData", "Android SDK", "Jetpack Compose", 
-        "React Native", "Flutter", "Expo", "Ionic"
-    ]))),
-    "데이터 처리 프레임워크": sorted(list(set([
-        "Apache Spark", "Hadoop", "Flink", "Storm", "Airflow", "Kafka"
-    ]))),
-    "ML/MLOps 프레임워크": sorted(list(set([
-        "MLflow", "Kubeflow", "DVC", "Weights & Biases", "Neptune.ai", "ClearML", 
-        "Sagemaker", "Vertex AI", "Argo Workflow"
-    ]))),
-    "CI/CD/DevOps 프레임워크": sorted(list(set([
-        "Jenkins", "GitLab Actions", "GitHub Actions", "ArgoCD", "Ansible", 
-        "CircleCI", "Travis CI", "Terraform", "Spinnaker"
-    ]))),
-    "게임 엔진": sorted(list(set([
+    "프레임워크": sorted(list(set([
+        # 웹 백엔드 프레임워크
+        "Spring", "Spring Boot", "ASP.NET", ".NET", "FastAPI", "Django", "Flask", 
+        "Node.js", "Express", "Nest.js", "Koa", "Laravel", "Symfony", "CodeIgniter",
+        # 프론트엔드 프레임워크
+        "React", "Vue.js", "Vue", "Angular", "Next.js", "Nuxt.js", "Svelte",
+        # 모바일 프레임워크
+        "UIKit", "SwiftUI", "Android SDK", "Jetpack Compose", "React Native", "Flutter", "Expo", "Ionic",
+        # 게임 엔진
         "Unity", "Unreal Engine", "Cocos2d-x", "Godot"
     ]))),
-    "웹 개발 라이브러리": sorted(list(set([
+    "라이브러리": sorted(list(set([
+        # 웹 개발 라이브러리
         "JWT", "jQuery", "Vite", "Webpack", "Babel", "Axios", "Lodash", "Moment.js", 
-        "Day.js", "Chart.js", "D3.js", "Three.js", "Socket.io", "Express-session"
-    ]))),
-    "데이터 처리 라이브러리": sorted(list(set([
-        "pandas", "NumPy", "SciPy", "Polars", "Dask", "Modin", "Vaex"
-    ]))),
-    "통계 및 모델링 라이브러리": sorted(list(set([
-        "statsmodels", "scipy.stats", "pingouin", "Researchpy", "statsmodels.api", 
-        "pymc3", "pymc4", "arviz", "bambi", "emcee", "corner", "scipy.optimize"
-    ]))),
-    "머신러닝 라이브러리": sorted(list(set([
-        "Scikit-learn", "XGBoost", "LightGBM", "CatBoost", "TensorFlow", "PyTorch", 
-        "Keras", "Transformers", "LangChain", "LlamaIndex", "Hugging Face"
-    ]))),
-    "딥러닝 라이브러리": sorted(list(set([
-        "TensorFlow Hub", "PyTorch Lightning", "Fast.ai", "JAX", "Flax"
-    ]))),
-    "자연어 처리 라이브러리": sorted(list(set([
-        "NLTK", "spaCy", "Gensim", "TextBlob", "transformers", "sentence-transformers"
-    ]))),
-    "컴퓨터 비전 라이브러리": sorted(list(set([
-        "OpenCV", "Pillow", "scikit-image", "imageio", "matplotlib", "seaborn", "plotly",
-        "opencv-python", "PIL", "imgaug", "albumentations"
-    ]))),
-    "시각화 라이브러리": sorted(list(set([
-        "Matplotlib", "Seaborn", "Plotly", "Bokeh", "Altair", "ggplot2", "dplyr", 
-        "plotnine", "vega-lite", "Observable Plot"
-    ]))),
-    "데이터베이스/ORM 라이브러리": sorted(list(set([
+        "Day.js", "Chart.js", "D3.js", "Three.js", "Socket.io",
+        # 데이터베이스/ORM 라이브러리
         "SQLAlchemy", "Django ORM", "Prisma", "Sequelize", "TypeORM", "Mongoose", 
-        "Room", "Retrofit", "Realm", "SQLite3"
-    ]))),
-    "API/네트워크 라이브러리": sorted(list(set([
-        "Requests", "urllib3", "httpx", "aiohttp", "grequests", "httpie"
-    ]))),
-    "테스팅 라이브러리": sorted(list(set([
+        "Room", "Retrofit", "Realm", "SQLite3",
+        # API/네트워크 라이브러리
+        "Requests", "urllib3", "httpx", "aiohttp", "grequests", "httpie",
+        # 테스팅 라이브러리
         "pytest", "unittest", "Jest", "Mocha", "Chai", "Cypress", "Selenium", 
         "Playwright", "Robot Framework"
-    ]))),
-    "대시보드/앱 프레임워크 라이브러리": sorted(list(set([
-        "Streamlit", "Gradio", "Dash", "Shiny", "Panel", "Voila"
-    ]))),
-    "보안 라이브러리": sorted(list(set([
-        "Metasploit", "Nmap", "Wireshark", "Burp Suite", "OWASP ZAP", "Nessus", 
-        "OpenVAS", "Snort", "Suricata", "Zeek", "OSSEC", "Wazuh"
-    ]))),
-    "특수 도메인 라이브러리": sorted(list(set([
-        "RDKit", "Biopython", "PyMOL", "MDTraj", "MDAnalysis"
-    ]))),
-    "클러스터링 라이브러리": sorted(list(set([
-        "scikit-learn.cluster", "scikit-learn.decomposition", "UMAP", "t-SNE", 
-        "hdbscan", "DBSCAN", "K-Means", "Hierarchical Clustering"
-    ]))),
-    "회귀 분석 라이브러리": sorted(list(set([
-        "Linear Regression", "Logistic Regression", "Ridge Regression", "Lasso Regression", 
-        "Elastic Net", "Polynomial Regression", "Support Vector Regression"
-    ]))),
-    "분류 라이브러리": sorted(list(set([
-        "Random Forest", "Decision Tree", "Naive Bayes", "SVM", "K-Nearest Neighbors", 
-        "Neural Networks", "Gradient Boosting"
-    ]))),
-    "시계열 분석 라이브러리": sorted(list(set([
-        "statsmodels.tsa", "prophet", "pmdarima", "tsfresh", "tslearn", "sktime"
-    ]))),
-    "베이지안 통계 라이브러리": sorted(list(set([
-        "pymc3", "pymc4", "arviz", "bambi", "emcee", "corner"
-    ]))),
-    "생존 분석 라이브러리": sorted(list(set([
-        "lifelines", "scikit-survival"
-    ]))),
-    "텍스트 마이닝 라이브러리": sorted(list(set([
-        "NLTK", "spaCy", "Gensim", "TextBlob", "transformers", "sentence-transformers"
-    ]))),
-    "네트워크 분석 라이브러리": sorted(list(set([
-        "NetworkX", "igraph", "graph-tool"
-    ]))),
-    "지리공간 분석 라이브러리": sorted(list(set([
-        "GeoPandas", "Shapely", "Fiona", "Rasterio", "Folium", "Basemap"
-    ]))),
-    "금융 분석 라이브러리": sorted(list(set([
-        "pandas-datareader", "yfinance", "QuantLib", "zipline", "backtrader"
-    ]))),
-    "이미지 처리 라이브러리": sorted(list(set([
-        "Pillow", "scikit-image", "imageio", "opencv-python", "PIL"
-    ]))),
-    "오디오 처리 라이브러리": sorted(list(set([
-        "librosa", "soundfile", "pydub"
-    ]))),
-    "비디오 처리 라이브러리": sorted(list(set([
-        "opencv-python", "moviepy", "ffmpeg-python"
     ]))),
     "아키텍처": sorted(list(set([
         "MSA (마이크로서비스 아키텍처)", "EDA (이벤트 기반 아키텍처)", "RESTful API", "서버리스 아키텍처"
