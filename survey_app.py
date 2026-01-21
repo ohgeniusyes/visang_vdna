@@ -12,196 +12,483 @@ from auth_utils import (
 
 # 페이지 설정
 st.set_page_config(
-    page_title="전사 CP 역량 세분화 설문 | 비상교육",
+    page_title="V‑DNA 전사 역량 설문 | 비상교육",
     page_icon="📋",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# 통합 기술 스택 정의 (모든 직군에 공통 적용)
-# 직군별로 나뉘어 있던 기술을 하나로 통합하여 distinct하게 구성
-TECH_STACK = {
-    "프로그래밍 언어": sorted(list(set([
-        "Java", "C#", "Python", "Go", "JavaScript", "TypeScript", "C++", "PHP", "JSP", "ASP", 
-        "SQL", "Bash", "Shell Script", "HTML", "CSS", "Swift", "Objective-C", "Kotlin", 
-        "Flutter", "Dart", "R", "Scala", "C", "YAML", "Groovy", "PowerShell"
-    ]))),
-    "프레임워크": sorted(list(set([
-        # 웹 백엔드 프레임워크
-        "Spring", "Spring Boot", "ASP.NET", ".NET", "FastAPI", "Django", "Flask", 
-        "Node.js", "Express", "Nest.js", "Koa", "Laravel", "Symfony", "CodeIgniter",
-        # 프론트엔드 프레임워크
-        "React", "Vue.js", "Vue", "Angular", "Next.js", "Nuxt.js", "Svelte",
-        # 모바일 프레임워크
-        "UIKit", "SwiftUI", "Android SDK", "Jetpack Compose", "React Native", "Flutter", "Expo", "Ionic",
-        # 게임 엔진
-        "Unity", "Unreal Engine", "Cocos2d-x", "Godot"
-    ]))),
-    "라이브러리": sorted(list(set([
-        # 웹 개발 라이브러리
-        "JWT", "jQuery", "Vite", "Webpack", "Babel", "Axios", "Lodash", "Moment.js", 
-        "Day.js", "Chart.js", "D3.js", "Three.js", "Socket.io",
-        # 데이터베이스/ORM 라이브러리
-        "SQLAlchemy", "Django ORM", "Prisma", "Sequelize", "TypeORM", "Mongoose", 
-        "Room", "Retrofit", "Realm", "SQLite3",
-        # API/네트워크 라이브러리
-        "Requests", "urllib3", "httpx", "aiohttp", "grequests", "httpie",
-        # 테스팅 라이브러리
-        "pytest", "unittest", "Jest", "Mocha", "Chai", "Cypress", "Selenium", 
-        "Playwright", "Robot Framework"
-    ]))),
-    "아키텍처": sorted(list(set([
-        "MSA (마이크로서비스 아키텍처)", "EDA (이벤트 기반 아키텍처)", "RESTful API", "서버리스 아키텍처"
-    ]))),
-    "미들웨어/런타임": sorted(list(set([
-        "Apache", "nginx", "Tomcat", "IIS", "WebLogic", "WebSphere", "JBoss", 
-        "Jupyter Notebook", "MLflow", "Kubeflow", "Airflow", "Spark", "Hadoop", "Kafka", 
-        "RabbitMQ", "Ray", "Dask", "FastAPI", "Flask", "Streamlit", "Docker", "Kubernetes", "Git", "DVC"
-    ]))),
-    "RDB": sorted(list(set([
-        "MySQL", "MariaDB", "PostgreSQL", "MSSQL", "Oracle", "SQLite", "BigQuery", "Snowflake", "Redshift"
-    ]))),
-    "NoSQL": sorted(list(set([
-        "MongoDB", "Redis", "DynamoDB", "Cassandra", "Elasticsearch", "OpenSearch", "Memcached", 
-        "Realm", "Firebase", "AsyncStorage", "Vector DB (Pinecone, Weaviate, Milvus, Qdrant, Redis)", 
-        "HBase", "Feature Store (Feast, Tecton)"
-    ]))),
-    "운영체제": sorted(list(set([
-        "Linux", "Unix", "Windows", "macOS"
-    ]))),
-    "클라우드": sorted(list(set([
-        "AWS", "Azure", "GCP", "NCP", "OCI", "On-Prem", "IDC", "Vercel", "Netlify", 
-        "App Store", "CloudKit", "Play Store", "Cloud Backend (AWS, Firebase, GCP)", 
-        "Databricks", "Steam", "Epic Games Store"
-    ]))),
-    "컨테이너": sorted(list(set([
-        "Docker", "Kubernetes", "EKS (Elastic Kubernetes Service)", "AKS", "GKE", 
-        "Docker (개발/배포 환경)", "Docker (개발 환경)", "Rancher", "KubeFlow", "Helm", "Kustomize"
-    ]))),
-    "CI/CD": sorted(list(set([
-        "Jenkins", "ArgoCD", "GitHub Actions", "GitLab CI", "CI/CD 파이프라인 구축 및 운영", 
-        "프론트엔드 빌드/배포 지원", "iOS 앱 빌드/배포 지원", "Android 앱 빌드/배포 지원", 
-        "크로스플랫폼 빌드/배포 지원", "데이터 파이프라인 구축 및 운영 (MLOps)", 
-        "MLOps 파이프라인 구축 및 운영", "데이터 파이프라인 구축 및 운영", "ETL 솔루션", 
-        "머신러닝 모델 개발 및 배포 (MLOps)", "MLOps 파이프라인 구축 및 운영", 
-        "MLflow", "Kubeflow", "데이터 분석 보고서 자동화", "인사 데이터 분석 및 시각화 (MLOps)", 
-        "GitOps", "ML 파이프라인 구축 및 운영", "모델 배포 자동화", "게임 빌드/배포 자동화", 
-        "보안 테스트/취약점 자동화"
-    ]))),
-    "협업 도구": sorted(list(set([
-        "Jira", "Confluence", "Teams", "Slack", "Notion", "Git"
-    ]))),
-    "프로젝트 관리": sorted(list(set([
-        "에자일 (Agile)", "스크럼 (Scrum)", "프로젝트 기획", "요구사항 분석", "기획 정의서 작성", 
-        "시스템 설계", "리스크 관리", "일정 관리", "교육 시스템/콘텐츠 플랫폼 기획", 
-        "프로젝트 관리", "협업", "문서 작성", "AI 프로젝트 리딩 (PL)", "모델 개발 결과 문서화", 
-        "AI/ML 서비스 설계 및 구축"
-    ]))),
-    "데이터/분석": sorted(list(set([
-        "데이터 파이프라인", "데이터 수집", "데이터 분석", "데이터 모델링", "데이터 시각화", 
-        "AI/ML 개발", "데이터 기반 의사결정", "사용자 행동 데이터 분석", "퍼널 분석", 
-        "A/B 테스트", "트래픽 분석", "로그 분석", "정형 데이터 핸들링", "비정형 데이터 핸들링", 
-        "빅데이터 처리", "대용량 데이터 처리", "데이터 마이그레이션", "데이터 전처리", 
-        "피처 엔지니어링", "데이터 가공", "빅데이터 분석 및 처리"
-    ]))),
-    "데이터 플랫폼": sorted(list(set([
-        "Data Lake", "Data Warehouse", "데이터 파이프라인", "데이터 포털", "데이터 카탈로그"
-    ]))),
-    "AI/ML 분야": sorted(list(set([
-        "자연어 처리 (NLP)", "컴퓨터 비전 (CV)", "대화형 AI (Chatbot)", "생성형 AI (Generative AI)", 
-        "LLM (Large Language Model) 활용", "예측 모델링", "분류 모델링", "최적화 모델링", 
-        "추천 시스템", "모델 성능 평가 및 최적화"
-    ]))),
-    "AI/ML 인프라": sorted(list(set([
-        "AI/ML 인프라 생성 및 관리", "AWS 기반 AI/ML 인프라", "클라우드 환경 모델 배포 및 운영", "분산 컴퓨팅"
-    ]))),
-    "모델 서빙": sorted(list(set([
-        "Triton Inference Server", "TorchServe", "vLLM", "TensorFlow Serving", "ONNX Runtime"
-    ]))),
-    "인프라/자동화": sorted(list(set([
-        "Terraform", "IaC (Infrastructure as Code)", "GPU 클러스터", "GPU 자원 스케줄링", 
-        "Nvidia Operator", "GPU Sharing"
-    ]))),
-    "보안": sorted(list(set([
-        "웹 보안 취약점 방어", "OWASP", "보안 정책 수립"
-    ]))),
-    "보안/인증": sorted(list(set([
-        "ISMS", "CSAP", "방화벽 (F/W)", "VPN", "접근통제", "WAF", "IDS/IPS", "보안장비 운영", 
-        "ISMS-P", "ISO27001", "방화벽", "침해사고 대응", "취약점 관리"
-    ]))),
-    "보안 표준/프레임워크": sorted(list(set([
-        "OWASP Top 10", "CWE", "CVE", "보안 아키텍처 설계"
-    ]))),
-    "가상화/인프라": sorted(list(set([
-        "VDI", "VMware", "Hyper-V", "KVM"
-    ]))),
-    "네트워크 프로토콜/Feature": sorted(list(set([
-        "WebSocket", "SSE", "Kafka", "RabbitMQ", "gRPC", "MQTT", "REST API", "GraphQL", 
-        "WebRTC", "UDP", "Photon", "Mirror", "Model Serving API", "TCP/IP", "HTTP/HTTPS", 
-        "TLS/SSL", "IPSec", "VPN", "IDS/IPS", "Firewall", "WAF", "DDoS Protection", "OSI 7계층", 
-        "SSH", "SCP", "SFTP", "DNS", "DHCP", "NTP", "SNMP", "Load Balancer", "CDN"
-    ]))),
-    "웹퍼블리싱": sorted(list(set([
-        "반응형 웹", "웹표준", "다양한 디바이스 대응", "HTML/CSS/JavaScript 능숙"
-    ]))),
-    "UI/UX": sorted(list(set([
-        "UI 설계", "UX 설계", "스토리보드 작성", "프로토타이핑", "사용자 리서치", "사용성 검증"
-    ]))),
-    "디자인 도구": sorted(list(set([
-        "Figma", "Framer", "Sketch", "Adobe XD", "Illustrator", "Photoshop", "InDesign", "Zeplin"
-    ]))),
-    "서비스 기획": sorted(list(set([
-        "플랫폼 서비스 기획", "기능 설계", "서비스 구조 설계", "추천 시스템 기획", 
-        "AI 서비스 기획", "서비스 로드맵 수립"
-    ]))),
-    "데이터 시각화/분석 도구": sorted(list(set([
-        "Tableau", "Power BI", "GA4 (Google Analytics)", "Looker Studio", "Excel", 
-        "Google Data Studio", "Matplotlib", "Seaborn", "Plotly"
-    ]))),
-    "모니터링/시각화/분석 도구": sorted(list(set([
-        "Grafana", "Prometheus", "ZABBIX", "Scouter", "Kibana", "CloudWatch", "Datadog", 
-        "New Relic", "Nagios", "Splunk", "ELK Stack", "SIEM", "SOAR", "TensorBoard"
-    ]))),
-    "기술 이해": sorted(list(set([
-        "웹/앱서비스 이해", "백엔드 시스템 이해", "데이터 흐름 이해", "API 이해"
-    ]))),
-    "자격증": sorted(list(set([
-        "GA4", "ADsP", "DAP"
-    ]))),
-    "편집 디자인": sorted(list(set([
-        "교과서 디자인", "교재 디자인", "타이포그래피", "편집 디자인"
-    ]))),
-    "프로모션/마케팅 디자인": sorted(list(set([
-        "디지털 마케팅 콘텐츠 디자인", "프로모션 디자인", "GUI 디자인", "인터랙션 디자인", 
-        "반응형 웹 디자인", "모바일 앱 디자인"
-    ])))
-}
+# 직군 목록 (1) 직군(역할) 선택 - 1-1 현재 주 직군
+OTHER_ROLE_LABEL = "기타(직접 입력)"
 
-# 직군 목록 (확장된 목록)
 JOB_ROLES = [
-    "Backend 개발자",
-    "Frontend 개발자",
-    "Full stack 개발자",
-    "서비스 기획자",
-    "웹/앱 서비스기획자",
-    "iOS 개발자",
-    "Android 개발자",
-    "크로스플랫폼 개발자",
-    "ML 엔지니어",
-    "Data Engineer",
-    "Data Scientist",
-    "Data Analyst",
-    "People Analyst",
-    "DevOps",
-    "MLOps",
-    "Game 개발자",
-    "보안 엔지니어",
-    "교육콘텐츠 개발자",
-    "퍼블리셔",
-    "웹/앱 디자이너",
-    "교과서/교재 편집 디자이너",
-    "기타"
+    # A. IT (세분화 유지)
+    "Backend 개발자 (NCS: IT/응용소프트웨어 개발자)",
+    "Frontend 개발자 (NCS: IT/응용소프트웨어 개발자)",
+    "iOS 앱 개발자(네이티브) (NCS: IT/응용소프트웨어 개발자)",
+    "Android 앱 개발자(네이티브) (NCS: IT/응용소프트웨어 개발자)",
+    "모바일 앱 개발자(하이브리드) (NCS: IT/응용소프트웨어 개발자)",
+    "DevOps 엔지니어 (NCS: IT/정보시스템 운영자)",
+    "SRE 엔지니어 (NCS: IT/정보시스템 운영자)",
+    "Platform Engineer (NCS: IT/정보시스템 운영자)",
+    "Data Engineer (NCS: IT/데이터 전문가)",
+    "Data Analyst (NCS: IT/데이터 전문가)",
+    "Data Scientist (NCS: IT/데이터 전문가)",
+    "LLM 개발자 (NCS: IT/데이터 전문가)",
+    "MLOps (NCS: IT/정보시스템 운영자)",
+    "정보보안(IT 보안 운영/기술 대응) (NCS: IT/정보보안 전문가)",
+    "정보보안(보안 정책·인증·점검/증적 중심) (NCS: IT/정보보안 전문가)",
+    "네트워크/시스템 개발자 (NCS: IT/네트워크 시스템 개발자)",
+    "정보시스템 운영자(Infra/업무시스템 운영) (NCS: IT/정보시스템 운영자)",
+
+    # B. 웹/서비스기획 · 상품/프로덕트 기획
+    "웹/서비스 기획자 (NCS: 웹/서비스기획/기획,마케팅 사무원)",
+    "상품/프로덕트 기획자 (NCS: 웹/서비스기획/상품 기획 전문가)",
+    "행사/전시 기획 (NCS: 경영/지원/행사·전시 기획자)",
+
+    # C. 마케팅
+    "마케팅(브랜드/그로스/퍼포먼스 등) (NCS: 마케팅/기획,마케팅 사무원)",
+    "영업·마케팅 운영/지원 (NCS: 기획/영업·마케팅 사무원)",
+
+    # D. 영업/서비스(국내/해외 포함)
+    "제품/광고 영업 (NCS: 영업/제품·광고 영업원)",
+    "해외 영업 (NCS: 영업/해외 영업원)",
+    "고객상담/CS/모니터링 (NCS: 경영/지원/고객상담원 및 모니터요원)",
+
+    # E. 콘텐츠(디지털/영상/교수지원/강의 운영 포함)
+    "온리원중등 콘텐츠개발자 (NCS: 콘텐츠/출판물전문가)",
+    "차시(비바샘·AIDT 등) 콘텐츠개발자 (NCS: 콘텐츠/출판물전문가)",
+    "영상 콘텐츠개발자 (NCS: 콘텐츠/영상·녹화·편집 기사)",
+    "서책(교과서/교재) 콘텐츠개발자 (NCS: 교과서/교재개발/출판물전문가)",
+    "온오프라인 연수/교육 콘텐츠개발자 (NCS: 콘텐츠/출판물전문가)",
+
+    # F. 디자인/영상(시각·웹·미디어)
+    "시각/그래픽 디자이너 (NCS: 디자인/영상/시각 디자이너)",
+    "웹디자이너 (NCS: 디자인/영상/웹디자인)",
+    "미디어/콘텐츠 디자이너 (NCS: 콘텐츠/미디어 콘텐츠 디자이너)",
+
+    # G. 경영/지원(관리/스탭)
+    "경영지원(일반) (NCS: 경영/지원/경영지원)",
+    "경영지원 사무원 (NCS: 경영/지원/경영지원 사무원)",
+    "총무 (NCS: 경영/지원/총무사무)",
+    "회계 (NCS: 경영/지원/회계 사무원)",
+    "법무/법률사무 (NCS: 경영/지원/법률사무)",
+    "비서 (NCS: 경영/지원/비서)",
+    "감사/내부통제 (NCS: 경영/지원/감사사무원)",
+    "인사(사무) (NCS: 경영/지원/인사사무)",
+    "인사/노무(전문) (NCS: 경영/지원/인사노무전문가)",
+    "경영·진단/전략 (NCS: 경영/지원/경영·진단 전문가)",
+    "자산·투자 운용 (NCS: 경영/지원/자산·투자 운용가)",
+    "물류/운송·물류 사무 (NCS: 물류/운송·물류 사무원)",
+    "건강/안마 (NCS: 경영/지원/안마사)",
+    "People Analyst (NCS: 경영/지원/인사사무)",
+
+    # H. 리더/임원
+    "임원/경영(리더십) (NCS: 기획/기업고위임원)",
+
+    # I. 기타
+    OTHER_ROLE_LABEL,
 ]
+
+# 설문 문항(2)~(15) 정의 - 텍스트만 정의하고 Q 번호는 코드에서 자동 부여
+RAW_QUESTION_SECTIONS = [
+    {
+        "section_id": "2",
+        "title": "2) IT 개발·운영 활동 수행 수준(전사 공통)",
+        "description": "이 문항이 필요한 이유: “내가 직접 개발을 하느냐”가 아니라, 시스템/데이터/AI 관련 업무에서 어느 수준의 책임을 맡을 수 있는지를 표준화해 파악하기 위함입니다.",
+        "columns": 1,
+        "questions": [
+            "요구사항 분석/정의는 어느 수준까지 할 수 있습니까? (e.g. 목표/범위/우선순위/성공기준을 문서로 정리해 합의)",
+            "설계(아키텍처/DB/API)는 어느 수준까지 할 수 있습니까? (e.g. 흐름/데이터 항목/권한/예외 케이스를 정의하고 설계에 반영)",
+            "구현(개발/스크립팅/자동화)은 어느 수준까지 할 수 있습니까? (e.g. 기능 구현 또는 반복 작업을 줄이기 위한 자동화/스크립팅)",
+            "테스트/품질은 어느 수준까지 할 수 있습니까? (e.g. 정상·예외 케이스 기준을 만들고 결과를 검증)",
+            "배포/릴리즈는 어느 수준까지 할 수 있습니까? (e.g. 배포 체크리스트, 영향 범위, 롤백 기준을 준비/확인)",
+            "운영/장애 대응은 어느 수준까지 할 수 있습니까? (e.g. 현상/재현 조건/시간대/영향 범위를 정리해 원인 분석과 복구에 기여)",
+            "성능 최적화는 어느 수준까지 할 수 있습니까? (e.g. 병목 구간을 특정하거나 개선 방향을 제안/적용)",
+            "비용 최적화는 어느 수준까지 할 수 있습니까? (e.g. 리소스 사용을 줄이는 대안을 제안/적용)",
+            "보안 대응은 어느 수준까지 할 수 있습니까? (e.g. 권한/접근 통제, 개인정보 처리 기준을 점검/적용)",
+            "문서화/표준화는 어느 수준까지 할 수 있습니까? (e.g. 운영 절차/가이드/FAQ를 작성하고 최신화)",
+            "코드리뷰/산출물 리뷰는 어느 수준까지 할 수 있습니까? (e.g. 코드 또는 산출물의 기준 준수 여부를 리뷰)",
+            "리딩/조율(오너십)은 어느 수준까지 할 수 있습니까? (e.g. 일정/리스크/이해관계자 조율, 의사결정 촉진)",
+        ],
+    },
+    {
+        "section_id": "3",
+        "title": "3) 협업·개발 기본기(공통)",
+        "description": "이 문항이 필요한 이유: 실제 프로젝트 성공은 “기술”뿐 아니라 협업 방식/품질 관리/문서화/문제 해결 방식에 크게 좌우됩니다.",
+        "columns": 1,
+        "questions": [
+            "Git 사용은 어느 수준까지 할 수 있습니까? (e.g. 변경 이력 관리, 충돌 해결, revert/cherry-pick)",
+            "이슈/업무 관리는 어느 수준까지 할 수 있습니까? (e.g. 티켓 기반으로 업무를 쪼개고 우선순위를 관리)",
+            "디버깅/트러블슈팅은 어느 수준까지 할 수 있습니까? (e.g. 증상→원인 가설→검증→조치의 방식으로 원인을 추적)",
+            "리팩토링/기술부채 관리는 어느 수준까지 할 수 있습니까? (e.g. 반복 문제를 구조적으로 개선하고 재발을 줄임)",
+            "기술 커뮤니케이션은 어느 수준까지 할 수 있습니까? (e.g. 구조/리스크/대안을 문서나 회의에서 명확히 전달)",
+        ],
+    },
+    {
+        "section_id": "4",
+        "title": "4) 프로그래밍 & 스크립팅 역량",
+        "description": "이 문항이 필요한 이유: 언어 역량은 즉시 투입 가능성(백필 포함)과 교육 우선순위 산정의 기초 데이터입니다.",
+        "columns": 3,
+        "questions": [
+            "ASP (e.g. 레거시 ASP 유지보수)",
+            "Bash (e.g. 운영/배포 스크립트)",
+            "C (e.g. 성능 민감 모듈)",
+            "C# (e.g. .NET 서비스/툴)",
+            "C++ (e.g. 게임/성능 최적화)",
+            "CSS (e.g. 반응형 스타일)",
+            "Dart (e.g. Flutter)",
+            "Go (e.g. 서버/툴)",
+            "Groovy (e.g. Jenkins 스크립트)",
+            "HTML (e.g. 마크업)",
+            "Java (e.g. 백엔드)",
+            "JavaScript (e.g. 프론트/Node)",
+            "JSP (e.g. 레거시 Java 웹)",
+            "Kotlin (e.g. Android/서버)",
+            "Objective‑C (e.g. 레거시 iOS)",
+            "PHP (e.g. 레거시 웹)",
+            "PowerShell (e.g. Windows 자동화)",
+            "Python (e.g. 데이터/백엔드/자동화)",
+            "R (e.g. 통계 분석)",
+            "Scala (e.g. Spark)",
+            "SQL (e.g. 쿼리 작성/기본 튜닝)",
+            "Shell Script (e.g. 서버 자동화)",
+            "Swift (e.g. iOS)",
+            "TypeScript (e.g. 대규모 프론트/Node)",
+            "YAML (e.g. K8s/CI 설정)",
+            "Rust (e.g. 성능/안정성 모듈)",
+            "Ruby (e.g. 스크립트/레거시)",
+            "Lua (e.g. 게임 스크립팅)",
+            "Markdown (e.g. 기술 문서/Runbook)",
+            "정규표현식(Regex) (e.g. 패턴 매칭/파싱/필터링)",
+        ],
+    },
+    {
+        "section_id": "5",
+        "title": "5) 애플리케이션 개발 프레임워크/SDK/게임엔진 역량",
+        "description": "이 문항이 필요한 이유: 프레임워크/SDK 경험은 실제 생산성과 즉시 투입 가능성을 좌우합니다.",
+        "columns": 3,
+        "questions": [
+            ".NET (e.g. 서버/윈도우 앱)",
+            "ASP.NET (e.g. Web API/MVC)",
+            "Android SDK (e.g. 네이티브 Android)",
+            "Angular (e.g. 프론트 SPA)",
+            "Cocos2d‑x (e.g. 게임)",
+            "CodeIgniter (e.g. PHP 레거시)",
+            "Django (e.g. Python 백엔드)",
+            "Expo (e.g. RN 워크플로)",
+            "Express (e.g. Node 백엔드)",
+            "FastAPI (e.g. Python API)",
+            "Flask (e.g. Python 서버)",
+            "Flutter (e.g. 크로스플랫폼)",
+            "Godot (e.g. 게임)",
+            "Ionic (e.g. 하이브리드)",
+            "Jetpack Compose (e.g. Android UI)",
+            "Koa (e.g. Node)",
+            "Laravel (e.g. PHP)",
+            "Nest.js (e.g. TS 백엔드)",
+            "Next.js (e.g. React SSR)",
+            "Node.js (e.g. 런타임/서버)",
+            "Nuxt.js (e.g. Vue SSR)",
+            "React (e.g. 프론트)",
+            "React Native (e.g. 모바일)",
+            "Spring (e.g. Java 백엔드)",
+            "Spring Boot (e.g. Java 백엔드)",
+            "Svelte (e.g. 프론트)",
+            "SwiftUI (e.g. iOS UI)",
+            "Symfony (e.g. PHP)",
+            "UIKit (e.g. iOS UI)",
+            "Unity (e.g. 게임)",
+            "Unreal Engine (e.g. 게임)",
+            "Vue (e.g. 프론트)",
+            "jQuery (e.g. 레거시 프론트)",
+            "Vite (e.g. 프론트 빌드)",
+            "Webpack (e.g. 번들 최적화)",
+            "Storybook (e.g. UI 문서화)",
+            "Electron (e.g. 데스크톱 앱)",
+            "Gradle (e.g. Android/Java 빌드)",
+            "Maven (e.g. Java 빌드)",
+            "CocoaPods (e.g. iOS 의존성)",
+            "SPM(Swift Package Manager) (e.g. iOS 의존성)",
+            "RxJS (e.g. 스트림 처리)",
+            "GraphQL Client(Apollo 등) (e.g. GraphQL 연동)",
+        ],
+    },
+    {
+        "section_id": "6",
+        "title": "6) 소프트웨어 품질/테스트 역량",
+        "description": "이 문항이 필요한 이유: 테스트/품질 역량은 장애/리워크를 줄여 일정과 운영 안정성을 개선합니다.",
+        "columns": 2,
+        "questions": [
+            "단위 테스트(Unit Test) (e.g. JUnit/Jest/XCTest 작성)",
+            "통합 테스트(Integration Test) (e.g. DB 포함 시나리오 검증)",
+            "E2E 테스트 (e.g. Cypress/Playwright UI 자동화)",
+            "계약 테스트(Contract Test) (e.g. API 스펙 기반 호환성)",
+            "테스트 더블/모킹(Mock/Stub) (e.g. 외부 API 모킹)",
+            "테스트 자동화 설계 (e.g. CI 자동 실행/리포트)",
+            "코드 커버리지 관리 (e.g. 기준선 운영)",
+            "성능 테스트/부하 테스트 (e.g. 부하/지연 측정)",
+        ],
+    },
+    {
+        "section_id": "7",
+        "title": "7) 데이터 엔지니어링 & 데이터 플랫폼 역량",
+        "description": "이 문항이 필요한 이유: 데이터 파이프라인/저장소 역량은 전사 분석/AI 품질의 기반이며 인력 계획에 필수입니다.",
+        "columns": 2,
+        "questions": [
+            "데이터 파이프라인 구축 및 운영 (e.g. 배치/재처리)",
+            "ETL 솔루션 구축 및 운영 (e.g. ELT 포함)",
+            "Apache Airflow (e.g. DAG)",
+            "Apache Spark (e.g. 분산 처리)",
+            "Kafka (e.g. 스트리밍)",
+            "Hadoop (e.g. 레거시)",
+            "Dask (e.g. 병렬)",
+            "Ray (e.g. 분산)",
+            "대용량 데이터 처리 (e.g. 파티셔닝)",
+            "데이터 마이그레이션 (e.g. 이관/검증)",
+            "정형 데이터 핸들링 (e.g. 모델링)",
+            "비정형 데이터 핸들링 (e.g. 로그/텍스트)",
+            "Data Lake (e.g. 객체 스토리지)",
+            "Data Warehouse (e.g. 분석 스키마)",
+            "데이터 카탈로그 (e.g. 메타데이터)",
+            "데이터 포털 (e.g. 셀프서브)",
+            "MySQL / PostgreSQL / MSSQL / Oracle / SQLite / MariaDB / Redshift / Snowflake / BigQuery (e.g. DB/DW)",
+            "MongoDB / Redis / Cassandra / DynamoDB / Elasticsearch/OpenSearch / HBase / Firebase (e.g. NoSQL/검색)",
+            "Feature Store(Feast, Tecton) (e.g. 피처 서빙)",
+            "Vector DB(Pinecone, Weaviate, Milvus, Qdrant 등) (e.g. 임베딩 검색)",
+            "데이터 품질 관리(Data Quality) (e.g. 정합성/이상치)",
+            "데이터 검증/테스트 (e.g. 규칙 기반 검증)",
+            "데이터 리니지/추적 (e.g. 영향도)",
+            "CDC(Change Data Capture) (e.g. 변경분 스트리밍)",
+            "스트리밍 처리 설계 (e.g. 중복/재처리)",
+            "데이터 권한/접근제어 (e.g. 권한)",
+            "개인정보/민감정보 처리(데이터) (e.g. 마스킹/토큰화)",
+        ],
+    },
+    {
+        "section_id": "8",
+        "title": "8) AI / ML 모델링 역량",
+        "description": "이 문항이 필요한 이유: 생성형 AI 포함 AI 역량의 실제 분포를 파악해 교육/채용/프로젝트 배치를 정교화합니다.",
+        "columns": 2,
+        "questions": [
+            "AI/ML 모델 개발 (e.g. 학습 파이프라인)",
+            "예측 모델링 (e.g. 수요/점수 예측)",
+            "분류 모델링 (e.g. 스팸/카테고리)",
+            "최적화 모델링 (e.g. 스케줄 최적화)",
+            "추천 시스템 구축 (e.g. 개인화 추천)",
+            "자연어 처리(NLP) (e.g. 분류/요약)",
+            "컴퓨터 비전(CV) (e.g. 검출/분류)",
+            "대화형 AI(Chatbot) (e.g. 상담/학습봇)",
+            "생성형 AI(Generative AI) (e.g. 콘텐츠 생성)",
+            "LLM 활용 (e.g. API 연동 기능)",
+            "모델 성능 평가 및 최적화 (e.g. 지표/튜닝)",
+            "데이터 라벨링/학습데이터 구축 (e.g. 라벨 가이드)",
+            "피처 엔지니어링 (e.g. 누수 방지)",
+            "실험 설계/재현성 관리 (e.g. seed/버전 고정)",
+            "LLM 프롬프트 엔지니어링 (e.g. few-shot)",
+            "RAG 설계/구현 (e.g. 청킹/리트리벌)",
+            "LLM 평가(Evals) (e.g. eval set/휴먼 평가)",
+            "AI 안전/가드레일 (e.g. PII 필터/환각 대응)",
+            "비용/지연 최적화(LLM) (e.g. 캐시/모델 라우팅)",
+        ],
+    },
+    {
+        "section_id": "9",
+        "title": "9) MLOps & 모델 운영 역량",
+        "description": "이 문항이 필요한 이유: 모델을 “서비스로 운영”하는 역량(배포/모니터링/재학습 등)을 파악하기 위함입니다.",
+        "columns": 2,
+        "questions": [
+            "MLOps 파이프라인 구축 및 운영 (e.g. 학습→배포 자동화)",
+            "ML 파이프라인 구축 및 운영 (e.g. 데이터→학습→평가)",
+            "Kubeflow (e.g. 파이프라인)",
+            "MLflow (e.g. 실험/레지스트리)",
+            "DVC (e.g. 데이터/모델 버전)",
+            "모델 배포 자동화 (e.g. CI로 배포)",
+            "모델 모니터링 및 자동 재학습 구성 (e.g. 성능 저하 감지)",
+            "AI/ML 인프라 생성 및 관리 (e.g. 학습/서빙 클러스터)",
+            "AWS 기반 AI/ML 인프라 (e.g. EKS/SageMaker)",
+            "분산 컴퓨팅 (e.g. 분산 학습)",
+            "GPU 클러스터 운영 (e.g. 드라이버/노드)",
+            "GPU 자원 스케줄링 (e.g. 큐/우선순위)",
+            "GPU Sharing (e.g. MIG 공유)",
+            "Nvidia Operator (e.g. GPU 오퍼레이터)",
+            "ONNX Runtime / TensorFlow Serving / TorchServe / Triton Inference Server / vLLM (e.g. 추론/서빙)",
+            "모델 레지스트리/승인 프로세스 (e.g. staging→prod)",
+            "데이터/모델 드리프트 감지 (e.g. 입력 분포 변화)",
+            "온라인 A/B 테스트(모델) (e.g. 신규 모델 실험)",
+            "추론 성능 최적화 (e.g. 배치/quantization)",
+            "프롬프트/체인 버전관리(LLM) (e.g. 프롬프트 이력)",
+            "LLM Observability (e.g. 품질/비용/실패율)",
+        ],
+    },
+    {
+        "section_id": "10",
+        "title": "10) 인프라 · 클라우드 · 컨테이너(Runtime) 역량",
+        "description": "이 문항이 필요한 이유: 운영 안정성과 비용/보안에 직결되는 인프라 역량 분포를 파악하기 위함입니다.",
+        "columns": 2,
+        "questions": [
+            "Linux / Unix / Windows / macOS (e.g. 시스템 운영)",
+            "AWS / Azure / GCP / NCP / OCI / On‑Prem / IDC / Databricks (e.g. 환경 운영)",
+            "Docker / Kubernetes / EKS / GKE / AKS / Helm / Kustomize / Rancher (e.g. 컨테이너)",
+            "네트워크 기본 (e.g. DNS/TCP/TLS)",
+            "IAM/권한 설계 (e.g. 최소권한)",
+            "로드밸런서/리버스 프록시 (e.g. ALB/Nginx)",
+            "스토리지/백업/복구 (e.g. 스냅샷/DR)",
+            "컨테이너 이미지 운영 (e.g. 이미지 스캔/레지스트리)",
+            "서비스 메시(Service Mesh) (e.g. Istio)",
+            "Ingress 설계 (e.g. TLS termination)",
+        ],
+    },
+    {
+        "section_id": "11",
+        "title": "11) DevOps · CI/CD · 자동화 역량",
+        "description": "이 문항이 필요한 이유: 자동화 성숙도는 배포 속도·품질·안정성을 결정하는 핵심 지표입니다.",
+        "columns": 2,
+        "questions": [
+            "CI/CD 파이프라인 구축 및 운영 (e.g. 빌드→테스트→배포 자동화)",
+            "GitOps / ArgoCD (e.g. 선언형 배포)",
+            "GitHub Actions / GitLab CI / Jenkins (e.g. 파이프라인)",
+            "프론트/모바일/게임 빌드·배포 자동화 (e.g. 릴리즈 자동화)",
+            "데이터 분석 보고서 자동화 (e.g. 정기 리포트)",
+            "보안 테스트/취약점 자동화 (e.g. SAST/DAST 자동 실행)",
+            "IaC(Infrastructure as Code) (e.g. Terraform/CloudFormation)",
+            "배포 전략 (e.g. Blue‑Green/Canary)",
+            "아티팩트/패키지 관리 (e.g. Nexus/사설 레지스트리)",
+            "비밀정보 관리 (e.g. Vault/Secret Manager)",
+            "릴리즈/체인지 관리 (e.g. 승인/릴리즈 노트)",
+        ],
+    },
+    {
+        "section_id": "12",
+        "title": "12) 시스템 아키텍처 & 실시간 통신 역량",
+        "description": "이 문항이 필요한 이유: 설계 역량은 확장성/장애 대응/운영 난이도를 좌우해 핵심 인력 식별에 중요합니다.",
+        "columns": 2,
+        "questions": [
+            "마이크로서비스 아키텍처(MSA) (e.g. 서비스 분리/독립 배포)",
+            "이벤트 기반 아키텍처(EDA) (e.g. 비동기 이벤트 처리)",
+            "RESTful API 설계 (e.g. 버저닝/에러 규격)",
+            "서버리스 아키텍처 (e.g. 함수 기반 구성)",
+            "WebSocket (e.g. 양방향 실시간 메시지/상태 동기화)",
+            "WebRTC (e.g. 실시간 음성/영상/화면공유)",
+            "gRPC (e.g. 내부 서비스 고성능 통신)",
+            "GraphQL (e.g. 필요한 데이터만 질의)",
+            "SSE (e.g. 서버→클라이언트 단방향 스트림)",
+            "모놀리식→MSA 분리/전환 (e.g. 점진적 분리 전략)",
+            "캐시/세션 전략 (e.g. Redis 세션/캐시 무효화)",
+            "데이터 일관성/사가(Saga) (e.g. 분산 트랜잭션 대안)",
+            "메시지 큐/브로커 설계 (e.g. 중복/재처리)",
+            "장애 격리/회복탄력성 (e.g. timeout/retry/circuit breaker)",
+            "API 게이트웨이 (e.g. 인증/레이트리밋)",
+            "Rate Limiting/Quota (e.g. 과호출 방어)",
+        ],
+    },
+    {
+        "section_id": "13",
+        "title": "13) 관측성(Observability) & 운영성 역량",
+        "description": "이 문항이 필요한 이유: 운영 가능한 역량을 구분하는 핵심이며 장애 대응/MTTR/운영 백필에 필수입니다.",
+        "columns": 2,
+        "questions": [
+            "로그 수집/분석 (e.g. 중앙 로그/검색/대시보드)",
+            "메트릭 모니터링 (e.g. CPU/Latency 대시보드)",
+            "분산 트레이싱 (e.g. 요청 추적)",
+            "알람/온콜 운영 (e.g. 심각도 기준/프로세스)",
+            "SLI/SLO 정의 (e.g. error rate/p95 목표)",
+            "Runbook/장애 회고(Postmortem) (e.g. 재발 방지)",
+        ],
+    },
+    {
+        "section_id": "14A",
+        "title": "14-A) 정보보안 역량 - IT 보안 운영/기술 대응",
+        "description": "이 문항이 필요한 이유: 전사 리스크(사고/감사/규제)에 직결되므로, IT 보안 운영 역량을 정확히 파악하기 위함입니다.",
+        "columns": 2,
+        "questions": [
+            "WAF 구축 및 운영은 어느 수준까지 할 수 있습니까? (e.g. 룰 적용/튜닝, 오탐·미탐 대응)",
+            "Firewall 구축 및 운영은 어느 수준까지 할 수 있습니까? (e.g. 정책/포트/대역 관리)",
+            "IDS/IPS 구축 및 운영은 어느 수준까지 할 수 있습니까? (e.g. 탐지/차단 정책 운영)",
+            "VPN 구성 및 운영은 어느 수준까지 할 수 있습니까? (e.g. 원격 접속 보안 구성)",
+            "접근통제 시스템 운영은 어느 수준까지 할 수 있습니까? (e.g. 계정·권한 운영, 접근 승인/회수)",
+            "보안장비 운영은 어느 수준까지 할 수 있습니까? (e.g. 장비 로그/정책 관리)",
+            "웹 보안 취약점 방어 구현은 어느 수준까지 할 수 있습니까? (e.g. XSS/CSRF/SQLi 방어 구현)",
+            "취약점 관리는 어느 수준까지 할 수 있습니까? (e.g. 진단→조치→재점검, 우선순위 관리)",
+            "침해사고 대응은 어느 수준까지 할 수 있습니까? (e.g. 탐지→분석→격리→복구→재발방지)",
+            "OWASP는 어느 수준까지 이해/적용할 수 있습니까? (e.g. 웹 취약점 분류 체계 이해)",
+            "OWASP Top 10은 어느 수준까지 이해/적용할 수 있습니까? (e.g. Top10 기반 점검/개선)",
+            "CVE는 어느 수준까지 활용할 수 있습니까? (e.g. 공지 확인 및 영향도 판단)",
+            "CWE는 어느 수준까지 활용할 수 있습니까? (e.g. 약점 유형 기반 재발 방지)",
+            "정적분석(SAST)은 어느 수준까지 운영할 수 있습니까? (e.g. 코드 스캔 파이프라인/룰)",
+            "동적분석(DAST)은 어느 수준까지 운영할 수 있습니까? (e.g. 스테이징 점검/리포트)",
+            "비밀정보 노출 방지는 어느 수준까지 할 수 있습니까? (e.g. 키/토큰 유출 방지, 스캔/차단)",
+            "취약점 패치/패치관리는 어느 수준까지 할 수 있습니까? (e.g. 패치 계획/배포/검증)",
+            "개인정보/민감정보 마스킹/암호화는 어느 수준까지 할 수 있습니까? (e.g. 컬럼 암호화/토큰화)",
+            "접근 로그/감사로그 설계는 어느 수준까지 할 수 있습니까? (e.g. 추적성 확보, 로그 보존 정책)",
+        ],
+    },
+    {
+        "section_id": "14B",
+        "title": "14-B) 정보보안 역량 - 보안 정책·인증·규정 준수",
+        "description": "이 문항이 필요한 이유: 정책/인증·점검 운영 역량을 구분해 정확히 파악하기 위함입니다.",
+        "columns": 2,
+        "questions": [
+            "보안 정책 수립은 어느 수준까지 할 수 있습니까? (e.g. 계정/권한/로그/비밀번호 정책)",
+            "보안 아키텍처(통제 체계) 설계는 어느 수준까지 할 수 있습니까? (e.g. 관리적·기술적·물리적 통제 정리)",
+            "한국 개인정보보호법(PIPA) 대응은 어느 수준까지 할 수 있습니까? (e.g. 수집·이용·보관·파기 기준/점검)",
+            "GDPR 대응은 어느 수준까지 할 수 있습니까? (e.g. 처리기록/권리 대응 프로세스)",
+            "CCPA/CPRA 대응은 어느 수준까지 할 수 있습니까? (e.g. 고지/요청 처리 체계)",
+            "ISMS 대응은 어느 수준까지 할 수 있습니까? (e.g. 통제 항목 운영, 점검표, 증적 관리)",
+            "ISMS-P 대응은 어느 수준까지 할 수 있습니까? (e.g. 개인정보 통제/점검/증적)",
+            "CSAP 대응은 어느 수준까지 할 수 있습니까? (e.g. 요구사항 점검/증적/개선조치)",
+            "ISO27001 대응은 어느 수준까지 할 수 있습니까? (e.g. 심사 준비, 문서/증적, 개선조치)",
+        ],
+    },
+    {
+        "section_id": "15",
+        "title": "15) 인증(SSO) · 결제 경험 + 레거시/전환 리스크 경험",
+        "description": "이 문항이 필요한 이유: 도메인 경험과 고위험 전환 경험은 즉시 투입·백필 판단에 강한 신호입니다.",
+        "columns": 2,
+        "questions": [
+            "SSO 연동 개발 경험 (Google/Apple/Azure AD/사내 계정 등) (e.g. OIDC 연동/콜백 처리)",
+            "인증 시스템 구현 경험 (JWT/OAuth2/세션 등) (e.g. Access/Refresh 토큰)",
+            "권한/역할(Role) 구조 설계 경험 (e.g. RBAC)",
+            "결제 시스템 연동 개발 경험 (PG사 API 등) (e.g. 승인/취소/검증)",
+            "정기결제/구독 결제 구현 경험 (e.g. 실패 재시도/유예기간)",
+            "환불/정산/결제 장애 처리 경험 (e.g. 대사/재처리)",
+            "계정 통합/휴면/탈퇴 처리 (e.g. 계정 병합/탈퇴 데이터 처리)",
+            "MFA/2FA 적용 (e.g. OTP/SMS/Authenticator)",
+            "결제 보안/부정결제 대응 (e.g. 리스크 룰/차단)",
+            "청구서/영수증/세금계산서 처리(해당 시) (e.g. B2B 정산)",
+            "구독 상태 머신 설계 (e.g. trial→paid→grace→cancel)",
+            "레거시 코드 리팩토링 (e.g. 테스트 없는 코드 개선)",
+            "프레임워크/런타임 업그레이드 (e.g. Spring/Node 메이저 업그레이드)",
+            "DB 마이그레이션 (e.g. 스키마 변경/검증)",
+            "데이터 대량 마이그레이션 (e.g. 정합성 검증)",
+            "모니터링/알람 신규 구축 (e.g. 알람 폭주/누락 방지)",
+            "보안 취약점 대량 조치 (e.g. 전사 패치)",
+        ],
+    },
+]
+
+# RAW_QUESTION_SECTIONS를 기반으로 Q1, Q2, ... 번호를 전역 순서로 자동 부여
+QUESTION_SECTIONS = []
+_q_counter = 1
+for _section in RAW_QUESTION_SECTIONS:
+    _qs = []
+    for _text in _section["questions"]:
+        _qs.append(
+            {
+                "id": f"Q{_q_counter}",
+                "text": _text,
+            }
+        )
+        _q_counter += 1
+    QUESTION_SECTIONS.append(
+        {
+            "section_id": _section["section_id"],
+            "title": _section["title"],
+            "description": _section.get("description", ""),
+            "columns": _section.get("columns", 2),
+            "questions": _qs,
+        }
+    )
 
 def main():
     # 페이지 라우팅: 세션 상태로 현재 페이지 관리
@@ -666,9 +953,32 @@ def show_survey_page(supabase):
             </div>
             """, unsafe_allow_html=True)
     
+    # 설문 제목 및 인삿말/안내
     st.markdown("""
-    <h1 style="font-size: 2rem; margin-bottom: 1rem;">📋 전사 CP 역량 세분화 설문</h1>
+    <h1 style="font-size: 2rem; margin-bottom: 1rem;">📋 V‑DNA 전사 역량 설문 (최종 배포본)</h1>
     """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    안녕하세요. 비상교육 V‑DNA 설문에 참여해 주셔서 감사합니다.
+    본 설문은 전사 구성원의 역할/경험/역량을 공통 기준으로 파악하여, 교육·배치·채용 및 데이터 기반 의사결정에 활용하기 위해 진행합니다.
+    
+    **설문 목적**
+    - 역량 파악 → 교육 로드맵/리스킬링 추천
+    - 부서 간 프로젝트 매칭
+    - 채용·인원 계획 및 백필(대체 인력) 탐색
+    - 머신러닝/딥러닝 기반 인재 모델 학습 데이터(Feature)로 활용
+    
+    **응답 방법(공통)**  
+    - 모든 문항은 동일한 5단계로 응답합니다: **해당없음 / 생초보 / 초급 / 중급 / 고급**
+    - 업무와 무관하거나 경험이 없으면 **‘해당없음’(기본값)**을 그대로 두고 넘어가시면 됩니다.
+    
+    **수준 판단 가이드(권장)**  
+    - **생초보**: 용어/개념을 아는 정도, 따라해본 경험  
+    - **초급**: 일부 수행/보조 가능(가이드/리뷰 필요)  
+    - **중급**: 독립 수행 가능(표준 문제 해결 가능)  
+    - **고급**: 설계/표준화/리딩 가능(복잡한 문제 해결·최적화 포함)
+    """)
+    
     st.markdown("---")
     
     # 사용자 정보 표시
@@ -679,18 +989,18 @@ def show_survey_page(supabase):
     
     st.markdown("---")
     
-    # 직군 선택 (폼 밖에서 처리 - 라디오 버튼 방식)
-    st.markdown("### 1. 직군 선택 *")
+    # 직군 선택 (폼 밖에서 처리)
+    st.markdown("### 1) 직군(역할) 선택")
     existing_job_role = existing_response_data.get("job_role", "") if has_existing_response and existing_response_data else ""
     
-    # 기존 응답에서 "기타"인 경우 확인
+    # 기존 응답에서 기타(직접 입력)인 경우 확인
     other_job_role = None
     if existing_job_role and existing_job_role not in JOB_ROLES:
         other_job_role = existing_job_role
-        existing_job_role = "기타"
+        existing_job_role = OTHER_ROLE_LABEL
     
-    # 직군을 5개씩 그룹으로 나누기
-    job_roles_without_other = [r for r in JOB_ROLES if r != "기타"]
+    # 직군을 5개씩 그룹으로 나누기 (기타는 마지막에 별도로 표시)
+    job_roles_without_other = [r for r in JOB_ROLES if r != OTHER_ROLE_LABEL]
     job_roles_groups = [job_roles_without_other[i:i+5] for i in range(0, len(job_roles_without_other), 5)]
     
     # 세션 상태로 선택된 직군 관리
@@ -712,31 +1022,45 @@ def show_survey_page(supabase):
                     st.session_state.selected_job_role = role
                     st.rerun()
     
-    # "기타" 옵션
+    # "기타(직접 입력)" 옵션
     cols_other = st.columns(5)
     with cols_other[0]:
-        button_type_other = "primary" if st.session_state.selected_job_role == "기타" else "secondary"
+        button_type_other = "primary" if st.session_state.selected_job_role == OTHER_ROLE_LABEL else "secondary"
         if st.button(
-            "기타",
+            OTHER_ROLE_LABEL,
             key="job_role_btn_기타",
             use_container_width=True,
             type=button_type_other
         ):
-            st.session_state.selected_job_role = "기타"
+            st.session_state.selected_job_role = OTHER_ROLE_LABEL
             st.rerun()
     
     job_role = st.session_state.selected_job_role
     
     # 선택된 직군 표시
     if job_role:
-        if job_role == "기타":
-            st.markdown(f"**선택된 직군**: {other_job_role if other_job_role else '기타 (입력 필요)'}")
+        if job_role == OTHER_ROLE_LABEL:
+            st.markdown(f"**선택된 직군(주 직군)**: {other_job_role if other_job_role else '기타(직접 입력) (입력 필요)'}")
         else:
-            st.markdown(f"**선택된 직군**: {job_role}")
+            st.markdown(f"**선택된 직군(주 직군)**: {job_role}")
     
     # "기타" 옵션 입력 (폼 밖)
-    if job_role == "기타":
+    if job_role == OTHER_ROLE_LABEL:
         other_job_role = st.text_input("직군을 입력해주세요 *", placeholder="예: QA 엔지니어", value=other_job_role if other_job_role else "", key="other_job_role_input")
+    
+    # 1-2. 부 직군 선택 (선택, 최대 2개) - 주 직군과 동일 목록에서 멀티 선택 (기타 제외)
+    st.markdown("#### 1-2. 부 직군이 있습니까? (선택, 최대 2개)")
+    secondary_roles_existing = existing_response_data.get("secondary_roles", []) if has_existing_response and existing_response_data else []
+    secondary_role_options = [r for r in JOB_ROLES if r != OTHER_ROLE_LABEL]
+    secondary_roles = st.multiselect(
+        "부 직군 선택 (최대 2개)",
+        options=secondary_role_options,
+        default=secondary_roles_existing,
+        key="secondary_roles_multiselect",
+        max_selections=2,
+        label_visibility="collapsed",
+        help="현재는 웹/서비스 기획자지만 과거 Frontend 개발자 경험이 있는 경우와 같이, 추가로 경험이 있는 직군을 선택해주세요."
+    )
     
     # 숙련도 설명 (직군 선택 바로 밑으로 이동)
     st.markdown("### 📌 숙련도 안내")
@@ -758,67 +1082,62 @@ def show_survey_page(supabase):
     
     st.markdown("---")
     
-    # 설문 폼
+    # 설문 폼 (2) ~ (15) 문항
     with st.form("survey_form", clear_on_submit=False):
-        st.markdown("### 2. 기술 스택 및 숙련도")
-        
-        # 직군 선택과 관계없이 항상 통합된 기술 스택 표시
-        tech_stack = TECH_STACK
-        
-        # 숙련도 옵션 (5개로 변경)
+        # 숙련도 옵션 (5단계)
         proficiency_levels = ["해당없음", "생초보", "초급", "중급", "고급"]
-        
-        # 응답 데이터 구조 (각 기술을 개별 항목으로 저장)
+
+        # 기존 응답 불러오기 (Q1, Q2, ...)
+        existing_responses = existing_response_data.get("responses", {}) if has_existing_response and existing_response_data else {}
+
+        # 새 응답을 저장할 딕셔너리
         responses = {}
-        
-        # 각 카테고리별로 기술 표시
-        for idx, (category, technologies) in enumerate(tech_stack.items()):
-            # 첫 번째 카테고리가 아니면 위에 간격 추가
-            if idx > 0:
-                st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(f"#### {category}")
-            
-            # 기존 응답 불러오기
-            existing_responses = existing_response_data.get("responses", {}) if has_existing_response and existing_response_data else {}
-            
-            # 기술을 5개씩 그룹으로 나누기
-            tech_groups = [technologies[i:i+5] for i in range(0, len(technologies), 5)]
-            
-            for tech_group in tech_groups:
-                cols = st.columns(5)
-                for idx, tech in enumerate(tech_group):
-                    with cols[idx]:
-                        # 기술명 표시
-                        st.markdown(f"**{tech}**")
-                        
-                        # 기존 숙련도 가져오기
-                        existing_proficiency = existing_responses.get(tech, "해당없음") if tech in existing_responses else "해당없음"
-                        
-                        # 세션 상태에서 현재 선택값 가져오기 (동적 반영을 위해)
-                        proficiency_key = f"prof_{category}_{tech}"
+
+        # 2) ~ 15) 섹션 렌더링
+        for section in QUESTION_SECTIONS:
+            st.markdown("---")
+            st.markdown(f"### {section['title']}")
+            if section.get("description"):
+                st.markdown(section["description"])
+
+            cols_per_row = section.get("columns", 2)
+            questions = section["questions"]
+
+            for i in range(0, len(questions), cols_per_row):
+                row_qs = questions[i:i+cols_per_row]
+                cols = st.columns(len(row_qs))
+                for col, q in zip(cols, row_qs):
+                    with col:
+                        q_id = q["id"]
+                        label = q["text"]
+
+                        # 기존 숙련도 가져오기 (없으면 기본값: 해당없음)
+                        existing_proficiency = existing_responses.get(q_id, "해당없음")
+
+                        # 세션 상태 키
+                        proficiency_key = f"prof_{q_id}"
                         if proficiency_key not in st.session_state:
                             st.session_state[proficiency_key] = existing_proficiency
-                        
-                        # 현재 선택값 (세션 상태 또는 기존 값)
+
                         current_proficiency = st.session_state.get(proficiency_key, existing_proficiency)
                         proficiency_index = proficiency_levels.index(current_proficiency) if current_proficiency in proficiency_levels else 0
-                        
-                        # selectbox 렌더링 (값이 변경되면 자동으로 rerun되어 proficiency 변수가 업데이트됨)
+
+                        # 문항 제목 (Q번호 + 질문)
+                        st.markdown(f"**{q_id}. {label}**")
+
+                        # 숙련도 선택 드롭다운
                         proficiency = st.selectbox(
                             "숙련도",
                             options=proficiency_levels,
                             index=proficiency_index,
                             key=proficiency_key,
-                            label_visibility="collapsed"
+                            label_visibility="collapsed",
                         )
-                        
-                        # 선택값을 세션 상태에 저장 (동적 반영)
-                        # selectbox의 반환값이 변경되면 자동으로 rerun되어 업데이트됨
+
                         if proficiency != st.session_state.get(proficiency_key):
                             st.session_state[proficiency_key] = proficiency
-                        
-                        # 응답 저장 (각 기술을 개별 항목으로)
-                        responses[tech] = proficiency
+
+                        responses[q_id] = proficiency
         
         st.markdown("---")
         
@@ -831,29 +1150,30 @@ def show_survey_page(supabase):
             # 유효성 검사
             if not job_role:
                 st.error("직군을 선택해주세요.")
-            elif job_role == "기타" and (not other_job_role or not other_job_role.strip()):
+            elif job_role == OTHER_ROLE_LABEL and (not other_job_role or not other_job_role.strip()):
                 st.error("직군을 입력해주세요.")
             else:
                 # 최종 직군 결정
-                final_job_role = other_job_role.strip() if job_role == "기타" else job_role
-                
+                final_job_role = other_job_role.strip() if job_role == OTHER_ROLE_LABEL else job_role
+
                 # user_profiles에서 이름 가져오기
                 try:
                     user_profile = supabase.table("user_profiles").select("name").eq("id", user_id).execute()
                     user_name = user_profile.data[0].get("name", "") if user_profile.data else ""
                 except:
                     user_name = ""
-                
+
                 # Supabase에 저장
                 try:
-                    # responses는 각 기술을 개별 항목으로 저장 (기술명: 숙련도)
+                    # responses는 각 문항(Q번호)을 개별 항목으로 저장 (Q번호: 숙련도)
                     response_data = {
                         "user_id": user_id,
                         "name": user_name,  # user_profiles에서 가져온 이름 사용
                         "job_role": final_job_role,
-                        "responses": responses  # {"기술명": "숙련도"} 형태
+                        "secondary_roles": secondary_roles,
+                        "responses": responses,  # {"Q1": "중급"} 형태
                     }
-                    
+
                     if has_existing_response and existing_response_data:
                         # 기존 응답 업데이트
                         response_id = existing_response_data["id"]
@@ -863,11 +1183,11 @@ def show_survey_page(supabase):
                         # 새 응답 생성
                         supabase.table("survey_responses").insert(response_data).execute()
                         st.success("✅ 설문이 제출되었습니다! 감사합니다.")
-                    
+
                     # 세션 상태 초기화
                     if "selected_job_role" in st.session_state:
                         del st.session_state.selected_job_role
-                    
+
                     st.rerun()
                 except Exception as e:
                     st.error(f"설문 제출 오류: {str(e)}")
