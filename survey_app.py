@@ -18,6 +18,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# ============================================
+# 임시 설정: 인증 우회 플래그
+# 회원가입 에러로 인해 임시로 인증 없이 설문 접근 가능하게 설정
+# 나중에 다시 인증을 활성화하려면 이 값을 False로 변경하면 됩니다.
+# ============================================
+BYPASS_AUTH = True
+
 # 직군 목록 (1) 직군(역할) 선택 - 1-1 현재 주 직군
 OTHER_ROLE_LABEL = "기타(직접 입력)"
 
@@ -493,7 +500,8 @@ for _section in RAW_QUESTION_SECTIONS:
 def main():
     # 페이지 라우팅: 세션 상태로 현재 페이지 관리
     if "current_page" not in st.session_state:
-        st.session_state.current_page = "login"
+        # 인증 우회 모드에서는 바로 설문 페이지로
+        st.session_state.current_page = "survey" if BYPASS_AUTH else "login"
     if "user" not in st.session_state:
         st.session_state.user = None
     
@@ -564,34 +572,48 @@ def main():
         st.session_state.url_hash_checked = True
     
     # 페이지별 라우팅
-    if st.session_state.current_page == "email_verified_success":
-        show_email_verified_success_page(supabase)
-    elif st.session_state.current_page == "email_verified_error":
-        show_email_verified_error_page(supabase)
-    elif st.session_state.current_page == "login":
-        show_login_page(supabase)
-    elif st.session_state.current_page == "signup":
-        show_signup_page(supabase)
-    elif st.session_state.current_page == "verify_email":
-        show_verify_email_page(supabase)
-    elif st.session_state.current_page == "reset_password":
-        show_reset_password_page(supabase)
-    elif st.session_state.current_page == "survey":
-        if st.session_state.user:
+    # ============================================
+    # 임시: 인증 우회 모드
+    # ============================================
+    if BYPASS_AUTH:
+        # 인증 우회 모드: 모든 접근을 설문 페이지로 리다이렉트
+        if st.session_state.current_page not in ["survey", "admin"]:
+            st.session_state.current_page = "survey"
+        if st.session_state.current_page == "survey":
             show_survey_page(supabase)
-        else:
-            st.session_state.current_page = "login"
-            st.rerun()
-    elif st.session_state.current_page == "admin":
-        if st.session_state.user and is_admin(st.session_state.user.get("email", "")):
+        elif st.session_state.current_page == "admin":
+            # 관리자 페이지는 여전히 인증 필요 (또는 우회 가능하게 설정)
             show_admin_page(supabase)
+    else:
+        # 기존 인증 모드 (나중에 복구용)
+        if st.session_state.current_page == "email_verified_success":
+            show_email_verified_success_page(supabase)
+        elif st.session_state.current_page == "email_verified_error":
+            show_email_verified_error_page(supabase)
+        elif st.session_state.current_page == "login":
+            show_login_page(supabase)
+        elif st.session_state.current_page == "signup":
+            show_signup_page(supabase)
+        elif st.session_state.current_page == "verify_email":
+            show_verify_email_page(supabase)
+        elif st.session_state.current_page == "reset_password":
+            show_reset_password_page(supabase)
+        elif st.session_state.current_page == "survey":
+            if st.session_state.user:
+                show_survey_page(supabase)
+            else:
+                st.session_state.current_page = "login"
+                st.rerun()
+        elif st.session_state.current_page == "admin":
+            if st.session_state.user and is_admin(st.session_state.user.get("email", "")):
+                show_admin_page(supabase)
+            else:
+                st.error("❌ 관리자만 접근할 수 있습니다.")
+                st.session_state.current_page = "login"
+                st.rerun()
         else:
-            st.error("❌ 관리자만 접근할 수 있습니다.")
             st.session_state.current_page = "login"
             st.rerun()
-    else:
-        st.session_state.current_page = "login"
-        st.rerun()
 
 def apply_common_styles():
     """공통 CSS 스타일 적용"""
@@ -905,13 +927,25 @@ def show_survey_page(supabase):
         st.error("❌ Supabase 연결이 필요합니다.")
         return
     
-    if not st.session_state.user:
-        st.session_state.current_page = "login"
-        st.rerun()
-        return
-    
-    user_id = st.session_state.user.get("id", "")
-    user_email = st.session_state.user.get("email", "")
+    # ============================================
+    # 임시: 인증 우회 모드
+    # ============================================
+    if BYPASS_AUTH:
+        # 인증 우회: 임시 사용자 정보 생성
+        if "anonymous_user_id" not in st.session_state:
+            import uuid
+            st.session_state.anonymous_user_id = f"anonymous_{uuid.uuid4().hex[:12]}"
+        user_id = st.session_state.anonymous_user_id
+        user_email = "anonymous@visang.com"
+    else:
+        # 기존 인증 모드 (나중에 복구용)
+        if not st.session_state.user:
+            st.session_state.current_page = "login"
+            st.rerun()
+            return
+        
+        user_id = st.session_state.user.get("id", "")
+        user_email = st.session_state.user.get("email", "")
     
     # 기존 응답 확인
     existing_response_data = None
@@ -981,8 +1015,9 @@ def show_survey_page(supabase):
     
     st.markdown("---")
     
-    # 사용자 정보 표시
-    st.markdown(f"**로그인된 사용자**: {user_email}")
+    # 사용자 정보 표시 (인증 우회 모드에서는 숨김 또는 간단히 표시)
+    if not BYPASS_AUTH:
+        st.markdown(f"**로그인된 사용자**: {user_email}")
     
     if has_existing_response:
         st.info("✅ 이미 설문에 응답하셨습니다. 아래에서 수정할 수 있습니다.")
@@ -1156,12 +1191,15 @@ def show_survey_page(supabase):
                 # 최종 직군 결정
                 final_job_role = other_job_role.strip() if job_role == OTHER_ROLE_LABEL else job_role
 
-                # user_profiles에서 이름 가져오기
-                try:
-                    user_profile = supabase.table("user_profiles").select("name").eq("id", user_id).execute()
-                    user_name = user_profile.data[0].get("name", "") if user_profile.data else ""
-                except:
+                # user_profiles에서 이름 가져오기 (인증 우회 모드에서는 빈 문자열)
+                if BYPASS_AUTH:
                     user_name = ""
+                else:
+                    try:
+                        user_profile = supabase.table("user_profiles").select("name").eq("id", user_id).execute()
+                        user_name = user_profile.data[0].get("name", "") if user_profile.data else ""
+                    except:
+                        user_name = ""
 
                 # Supabase에 저장
                 try:
@@ -1194,28 +1232,29 @@ def show_survey_page(supabase):
     
     st.markdown("---")
     
-    # 사용자 설정 섹션
-    col_logout, col_admin, col_delete = st.columns(3)
-    
-    with col_logout:
-        if st.button("로그아웃", key="logout_btn", use_container_width=True):
-            st.session_state.user = None
-            st.session_state.current_page = "login"
-            st.rerun()
-    
-    with col_admin:
-        if is_admin(user_email):
-            if st.button("관리자 페이지", key="admin_btn", use_container_width=True):
-                st.session_state.current_page = "admin"
+    # 사용자 설정 섹션 (인증 우회 모드에서는 숨김)
+    if not BYPASS_AUTH:
+        col_logout, col_admin, col_delete = st.columns(3)
+        
+        with col_logout:
+            if st.button("로그아웃", key="logout_btn", use_container_width=True):
+                st.session_state.user = None
+                st.session_state.current_page = "login"
+                st.rerun()
+        
+        with col_admin:
+            if is_admin(user_email):
+                if st.button("관리자 페이지", key="admin_btn", use_container_width=True):
+                    st.session_state.current_page = "admin"
+                    st.rerun()
+        
+        with col_delete:
+            if st.button("회원 탈퇴", key="delete_account_btn", use_container_width=True, type="secondary"):
+                st.session_state.show_delete_confirm = True
                 st.rerun()
     
-    with col_delete:
-        if st.button("회원 탈퇴", key="delete_account_btn", use_container_width=True, type="secondary"):
-            st.session_state.show_delete_confirm = True
-            st.rerun()
-    
-    # 회원 탈퇴 확인 다이얼로그
-    if st.session_state.get("show_delete_confirm", False):
+    # 회원 탈퇴 확인 다이얼로그 (인증 우회 모드에서는 숨김)
+    if not BYPASS_AUTH and st.session_state.get("show_delete_confirm", False):
         st.markdown("---")
         st.warning("⚠️ **회원 탈퇴 확인**")
         st.markdown("""
